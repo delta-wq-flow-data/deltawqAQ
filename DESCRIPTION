@@ -1,11 +1,11 @@
 Package: deltawqAQ
 Type: Package
-Title: What the Package Does (Title Case)
+Title: This package obtains water quality data from Aquarius
 Version: 0.1.0
 Authors@R: c(
     person(
-      "Jane", "Doe",
-      email = "jane@example.com",
+      "Catarina", "Pien",
+      email = "cpien@flowwest.com",
       role = c("aut", "cre")
     )
   )
