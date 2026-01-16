@@ -1,4 +1,3 @@
-# Function with some error handling to connect to aquarius
 aq_connect <- function(server_hostname, username, password, timeout_seconds=30) {
   # Attempt connection with error handling
   tryCatch({
