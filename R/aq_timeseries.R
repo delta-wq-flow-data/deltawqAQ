@@ -14,16 +14,20 @@ aq_get_ts = function(station_code, parameter, label, query_from, query_to,
   df <- aq_process_ts(station_code, parameter, label, query_from, query_to)
 
   # Write to CSV if requested
-  if (write==TRUE) {
+  if (isTRUE(write)) {
     output_file <- if (!is.null(output_path)) {
       here::here(output_path, paste0(station_code, "_", parameter, "_data.csv"))
     } else {
       here::here(paste0(station_code, "_", parameter, "_data.csv"))
     }
 
-    write.csv(df, output_file, row.names = FALSE)
-    cat("Data written to:", output_file, "\n")
-    # return(invisible(df))
+    tryCatch({
+      write.csv(df, output_file, row.names = FALSE)
+      cli::cli_alert_success("Data written to: {output_file}")
+    }, error = function(e) {
+      cli::cli_alert_danger("Failed to write file: {e$message}")
+    })
+    return(invisible(df))
   }
 
   # Return normally if not writing
@@ -34,14 +38,19 @@ aq_get_ts = function(station_code, parameter, label, query_from, query_to,
 ### Function to process data into data frame
 aq_process_ts = function(station_code, parameter, label, query_from, query_to) {
 
-  ## Get the timeseries ID -------------------------
-  ## AQUARIUS uses the format: Parameter.Label@LocationIdentifier
+  # Ensure disconnection happens no matter how function exits
+  on.exit(timeseries$disconnect(), add = TRUE)
+
+  # Get the timeseries ID
+  # AQUARIUS uses the format: Parameter.Label@LocationIdentifier
   timeseries_id <- paste0(parameter, ".", label, "@", station_code)
-  cat("Requesting time-series:", timeseries_id, "\n")
-  cat("Time range:", query_from, "to", query_to, "\n\n")
+  cli::cli_alert_info(c(
+    "Requesting time-series: {timeseries_id}",
+    "Time range: {query_from} to {query_to}"
+  ))
 
   ## Get the JSON form of the data ------------------
-  cat("Fetching data...\n")
+  cli::cli_alert_info("Fetching data...")
   json_data <- timeseries$getTimeSeriesData(
     timeSeriesIds = timeseries_id,
     queryFrom = query_from,
@@ -54,12 +63,11 @@ aq_process_ts = function(station_code, parameter, label, query_from, query_to) {
 
   # Check if we got any data
   if (nrow(points) == 0) {
-    cat("No data found for the specified time range.\n")
-    timeseries$disconnect()
-    stop("No data retrieved. Exiting.")
+    cli::cli_alert_warning("No data found for the specified time range")
+    cli::cli_abort("No data retrieved.")
   }
 
-  cat("Retrieved", nrow(points), "data points\n\n")
+  cli::cli_alert_success("Retrieved {nrow(points)} data points")
 
   # Convert timestamps to POSIXct format for easier handling
   # parseIso8601 automatically handles any timezone offset in the ISO 8601 string
@@ -84,4 +92,6 @@ aq_process_ts = function(station_code, parameter, label, query_from, query_to) {
     Approval = points$ApprovalName1,
     stringsAsFactors = FALSE
   )
+
+  return(df)
 }

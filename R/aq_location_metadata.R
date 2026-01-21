@@ -1,14 +1,14 @@
 ## Get location metadata, including latitude and longitude. we may want to add more things like county in the future.
-aq_get_location_metadata = function(cdec_code=NULL, location_id=NULL, aq_location_id=NULL) {
+aq_get_location_metadata = function(cdec_code = NULL, location_id = NULL, aq_location_id = NULL) {
 
   # run all locations metadata and get list of all stations
   data <- aq_get_location_list()
 
   # Looks for either cdec code, location_id, or aq_location_id within all stations
   data_filtered <- data %>%
-    {if (!is.null(cdec_code)) filter(., cdec_code %in% !!cdec_code) else .} %>%
-    {if (!is.null(location_id)) filter(., location_id %in% !!location_id) else .} %>%
-    {if (!is.null(aq_location_id)) filter(., aq_location_id %in% !!aq_location_id) else .}
+    {if (!is.null(cdec_code)) filter(., cdec_code %in% cdec_code) else .} %>%
+    {if (!is.null(location_id)) filter(., location_id %in% location_id) else .} %>%
+    {if (!is.null(aq_location_id)) filter(., aq_location_id %in% aq_location_id) else .}
 
   # Return df
   return(data_filtered)
@@ -17,7 +17,7 @@ aq_get_location_metadata = function(cdec_code=NULL, location_id=NULL, aq_locatio
 
 
 ### Function to get metadata for all locations
-aq_get_location_list = function() {
+aq_get_location_list  <- function() {
 
   # Function to connect to aquarius
   aq_connect(server_hostname = Sys.getenv("AQTS_SERVER"),
@@ -33,12 +33,11 @@ aq_get_location_list = function() {
 
   # Check if we got any data
   if (length(json_locations$Name) == 0) {
-    cat("No data found.\n")
-    timeseries$disconnect()
-    stop("No data retrieved. Exiting.")
+    cli::cli_alert_warning("No data found.")
+    cli::cli_abort("No data retrieved.")
   }
 
-  cat("Retrieved", length(json_locations$Name), "data points\n\n")
+  cli::cli_alert_success("Retrieved {length(json_locations$Name)} locations")
 
   # Create data frame for useful location information
   df <- data.frame(

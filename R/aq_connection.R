@@ -7,18 +7,19 @@ aq_connect <- function(server_hostname, username, password, timeout_seconds=30) 
     }
 
     timeseries$connect(server_hostname,username,password)
-    cat("Connected successfully! Server version:", timeseries$version, "\n\n")
-
+    cli::cli_alert_success("Connected successfully! Server version: {timeseries$version}")
   }, error = function(e) {
-    cat_bullet("\nERROR: Failed to connect to AQUARIUS server.\n")
-    cli_bullets("Server:", server_hostname, "\n")
-    cat("Error message:", conditionMessage(e), "\n\n")
-    cat("Troubleshooting tips:\n")
-    cat("  1. Verify server URL is correct and accessible\n")
-    cat("  2. Check username and password in .Renviron\n")
-    cat("  3. Ensure you have network access to the server\n")
-    cat("  4. Try accessing the server in a web browser\n")
-    stop("Connection failed. Please fix the issues above and try again.")
+    cli::cli_alert_danger("Failed to connect to AQUARIUS server.")
+    cli::cli_alert_info("Server: {server_hostname}")
+    cli::cli_alert_warning("Error message: {conditionMessage(e)}")
+    cli::cli_h2("Troubleshooting tips:")
+    cli::cli_ol(c(
+      "Verify server URL is correct and accessible",
+      "Check username and password in .Renviron",
+      "Ensure you have network access to the server",
+      "Try accessing the server in a web browser"
+    ))
+    cli::cli_abort("Connection failed. Please fix the issues above and try again.")
   })
 
 }
@@ -27,13 +28,11 @@ aq_connect <- function(server_hostname, username, password, timeout_seconds=30) 
 # Function to disconnect from Aquarius
 aq_disconnect <- function() {
   # Ensure disconnection happens even if there are errors
-  on.exit({
-    cat("\nDisconnecting from AQUARIUS...\n")
+    cli::cli_alert_info("Disconnecting from AQUARIUS...")
     tryCatch({
       timeseries$disconnect()
-      cat("Disconnected successfully.\n")
+      cli::cli_alert_success("Disconnected successfully")
     }, error = function(e) {
-      cat("Warning: Error during disconnect:", conditionMessage(e), "\n")
+      cli::cli_alert_warning("Warning: Error during disconnect: {conditionMessage(e)}")
     })
-  })
 }
