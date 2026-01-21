@@ -14,3 +14,10 @@ Encoding: UTF-8
 LazyData: true
 URL: https://github.com/delta-wq-flow-data/deltawqAQ
 BugReports: https://github.com/delta-wq-flow-data/deltawqAQ/issues
+Imports: 
+    cli,
+    dplyr,
+    here,
+    httr2,
+    jsonlite,
+    purrr
