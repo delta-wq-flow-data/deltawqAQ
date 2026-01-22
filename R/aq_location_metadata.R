@@ -15,13 +15,13 @@ aq_get_location_metadata = function(cdec_code = NULL, location_id = NULL, aq_loc
   data_filtered <- data
 
   if (!is.null(cdec_code)) {
-    data_filtered <- data_filtered %>% filter(cdec_code %in% .env$cdec_code)
+    data_filtered <- data_filtered |> dplyr::filter(cdec_code %in% .env$cdec_code)
   }
   if (!is.null(location_id)) {
-    data_filtered <- data_filtered %>% filter(location_id %in% .env$location_id)
+    data_filtered <- data_filtered |> dplyr::filter(location_id %in% .env$location_id)
   }
   if (!is.null(aq_location_id)) {
-    data_filtered <- data_filtered %>% filter(aq_location_id %in% .env$aq_location_id)
+    data_filtered <- data_filtered |> dplyr::filter(aq_location_id %in% .env$aq_location_id)
   }
 
   # Return df
@@ -67,11 +67,11 @@ aq_get_location_list  <- function(connect = TRUE) {
     aq_unique_id = json_locations$UniqueId,
     updated_at = json_locations$LastModified,
     stringsAsFactors = FALSE
-  ) %>%
-    filter(grepl("_", aq_location_id)) %>%
-    separate(col = aq_location_id, into = c("location_id", "cdec_code"), sep = "_", remove = FALSE) %>%
-    separate(col = aq_station_name, into = c("cdec", "location_name"), sep = " - ", remove = FALSE ) %>%
-    mutate(cdec_code = toupper(substr(cdec_code, 1, 3)))
+  ) |>
+    dplyr::filter(grepl("_", aq_location_id)) |>
+    tidyr::separate(col = aq_location_id, into = c("location_id", "cdec_code"), sep = "_", remove = FALSE) |>
+    tidyr::separate(col = aq_station_name, into = c("cdec", "location_name"), sep = " - ", remove = FALSE ) |>
+    dplyr::mutate(cdec_code = toupper(substr(cdec_code, 1, 3)))
 
   # Get latitude and longitude for stations
   json_location_data <- lapply(df$aq_location_id, timeseries$getLocationData)
@@ -82,8 +82,8 @@ aq_get_location_list  <- function(connect = TRUE) {
     ~ data.frame(
       aq_location_id = .x$Identifier,
       latitude = .x$Latitude,
-      longitude = .x$Longitude)) %>%
-    dplyr::left_join(df) %>%
+      longitude = .x$Longitude)) |>
+    dplyr::left_join(df) |>
     dplyr::select(cdec_code, location_id, location_name, latitude, longitude, aq_location_id, aq_station_name, aq_unique_id, updated_at)
 
   # Return data frame

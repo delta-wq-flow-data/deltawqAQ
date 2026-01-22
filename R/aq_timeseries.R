@@ -31,13 +31,13 @@ aq_get_ts <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NUL
   data_filtered <- data
 
   if (!is.null(cdec_code)) {
-    data_filtered <- data_filtered %>% filter(cdec_code %in% .env$cdec_code)
+    data_filtered <- data_filtered |>  dplyr::filter(cdec_code %in% .env$cdec_code)
   }
   if (!is.null(location_id)) {
-    data_filtered <- data_filtered %>% filter(location_id %in% .env$location_id)
+    data_filtered <- data_filtered |> dplyr::filter(location_id %in% .env$location_id)
   }
   if (!is.null(aq_location_id)) {
-    data_filtered <- data_filtered %>% filter(aq_location_id %in% .env$aq_location_id)
+    data_filtered <- data_filtered |> dplyr::filter(aq_location_id %in% .env$aq_location_id)
   }
 
   # Right after data_filtered
@@ -56,8 +56,8 @@ aq_get_ts <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NUL
   # Function to obtain time series data
   df <- aq_process_ts(station_code, parameter, query_from, query_to)
 
-  ts_data <- df %>%
-    dplyr::left_join(data_filtered, by = "aq_location_id") %>%
+  ts_data <- df |>
+    dplyr::left_join(data_filtered, by = "aq_location_id") |>
     dplyr::select(datetime,
                   cdec_code,
                   location_id,
@@ -104,8 +104,8 @@ aq_process_ts = function(station_code, parameter, query_from, query_to) {
   filtered_params <- aq_get_station_parameters(aq_location_id = station_code, connect = FALSE)
 
   # Filter to the specific parameter requested
-  param_info <- filtered_params %>%
-    filter(parameter_name == parameter)
+  param_info <- filtered_params |>
+    dplyr::filter(parameter_name == parameter)
 
   if (nrow(param_info) == 0) {
     cli::cli_abort("Parameter '{parameter}' not found for station {station_code}")
@@ -114,12 +114,13 @@ aq_process_ts = function(station_code, parameter, query_from, query_to) {
   # Use the first label if multiple exist
   label <- param_info$label[1]
 
+  cli::cli_alert_info("Found label: {label}")
 
   # Get the timeseries ID
   # AQUARIUS uses the format: Parameter.Label@LocationIdentifier
   timeseries_id <- paste0(parameter, ".", label, "@", station_code)
   cli::cli_alert_info(c(
-    "Requesting time-series: {timeseries_id}",
+    "Requesting time-series: {timeseries_id} ",
     "Time range: {query_from} to {query_to}"
   ))
 
@@ -199,13 +200,13 @@ aq_get_ts_multi_station <- function(cdec_code = NULL, location_id = NULL, aq_loc
   data_filtered <- data
 
   if (!is.null(cdec_code)) {
-    data_filtered <- data_filtered %>% filter(cdec_code %in% .env$cdec_code)
+    data_filtered <- data_filtered |> dplyr::filter(cdec_code %in% .env$cdec_code)
   }
   if (!is.null(location_id)) {
-    data_filtered <- data_filtered %>% filter(location_id %in% .env$location_id)
+    data_filtered <- data_filtered |> dplyr::filter(location_id %in% .env$location_id)
   }
   if (!is.null(aq_location_id)) {
-    data_filtered <- data_filtered %>% filter(aq_location_id %in% .env$aq_location_id)
+    data_filtered <- data_filtered |> dplyr::filter(aq_location_id %in% .env$aq_location_id)
   }
 
   # Check if any stations were found
@@ -233,8 +234,8 @@ aq_get_ts_multi_station <- function(cdec_code = NULL, location_id = NULL, aq_loc
       df <- aq_process_ts(station, parameter, query_from, query_to)
 
       # Join with location metadata
-      ts_data <- df %>%
-        dplyr::left_join(data_filtered, by = "aq_location_id") %>%
+      ts_data <- df |>
+        dplyr::left_join(data_filtered, by = "aq_location_id") |>
         dplyr::select(datetime,
                       cdec_code,
                       location_id,
@@ -248,9 +249,9 @@ aq_get_ts_multi_station <- function(cdec_code = NULL, location_id = NULL, aq_loc
       # Write individual files if requested
       if (isTRUE(write)) {
         # Get station identifier for filename
-        station_name <- data_filtered %>%
-          filter(aq_location_id == station) %>%
-          pull(cdec_code)
+        station_name <- data_filtered |>
+          dplyr::filter(aq_location_id == station) |>
+          dplyr::pull(cdec_code)
 
         output_file <- if (!is.null(output_path)) {
           here::here(output_path, paste0(station_name, "_", parameter, "_data.csv"))
@@ -322,13 +323,13 @@ aq_get_ts_multi_param <- function(cdec_code = NULL, location_id = NULL, aq_locat
   data_filtered <- data
 
   if (!is.null(cdec_code)) {
-    data_filtered <- data_filtered %>% filter(cdec_code %in% .env$cdec_code)
+    data_filtered <- data_filtered |> dplyr::filter(cdec_code %in% .env$cdec_code)
   }
   if (!is.null(location_id)) {
-    data_filtered <- data_filtered %>% filter(location_id %in% .env$location_id)
+    data_filtered <- data_filtered |> dplyr::filter(location_id %in% .env$location_id)
   }
   if (!is.null(aq_location_id)) {
-    data_filtered <- data_filtered %>% filter(aq_location_id %in% .env$aq_location_id)
+    data_filtered <- data_filtered |> dplyr::filter(aq_location_id %in% .env$aq_location_id)
   }
 
   # Check if station was found
@@ -361,8 +362,8 @@ aq_get_ts_multi_param <- function(cdec_code = NULL, location_id = NULL, aq_locat
       df <- aq_process_ts(station_code, param, query_from, query_to)
 
       # Join with location metadata
-      ts_data <- df %>%
-        dplyr::left_join(data_filtered, by = "aq_location_id") %>%
+      ts_data <- df |>
+        dplyr::left_join(data_filtered, by = "aq_location_id") |>
         dplyr::select(datetime,
                       cdec_code,
                       location_id,
