@@ -12,8 +12,8 @@
 #' @param output_path folder path for output timeseries if write == TRUE
 #' @returns returns a data frame of the time series as well as location codes
 #' @examples
-#' aq_get_ts(cdec_code = "SJW", parameter = "Water Temp", query_from = "2025-12-01T00:00:00Z", query_to = "2026-01-01T00:00:00Z")
-#' aq_get_ts(location_id = "11447903", parameter = "Sp Cond", query_from = "2025-12-01T00:00:00Z", query_to = lubridate::now(), write = TRUE, output = here::here())
+#' ts_data <- aq_get_ts(cdec_code = "SJW", parameter = "Water Temp", query_from = "2025-12-01T00:00:00Z", query_to = "2026-01-01T00:00:00Z")
+#' ts_data <- aq_get_ts(location_id = "11447903", parameter = "Sp Cond", query_from = "2025-12-01T00:00:00Z", query_to = lubridate::now(), write = TRUE, output = here::here())
 
 aq_get_ts <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NULL,
                       parameter, query_from, query_to,
@@ -185,8 +185,8 @@ aq_process_ts = function(station_code, parameter, query_from, query_to) {
 #' @param output_path folder path for output timeseries if write == TRUE
 #' @returns returns a data frame of the combined time series
 #' @examples
-#' aq_get_ts_multi_station(cdec_code = c("SJW", "MDM", "GSS"),  parameter = "Turbidity, Form Neph", query_from = "2025-12-01T00:00:00Z", query_to = "2026-01-01T00:00:00Z")
-#' aq_get_ts_multi_station(location_id = c("11447903", "11447905", "11447890"), parameter = "Sp Cond", query_from = "2025-12-01T00:00:00Z", query_to = lubridate::now(), write = TRUE, output = here::here())
+#' multi_sta_ts <- aq_get_ts_multi_station(cdec_code = c("SJW", "MDM", "GSS"),  parameter = "Turbidity, Form Neph", query_from = "2025-12-01T00:00:00Z", query_to = "2026-01-01T00:00:00Z")
+#' multi_sta_ts <- aq_get_ts_multi_station(location_id = c("11447903", "11447905", "11447890"), parameter = "Sp Cond", query_from = "2025-12-01T00:00:00Z", query_to = lubridate::now(), write = TRUE, output = here::here())
 
 aq_get_ts_multi_station <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NULL,
                                     parameter, query_from, query_to,
@@ -312,8 +312,8 @@ aq_get_ts_multi_station <- function(cdec_code = NULL, location_id = NULL, aq_loc
 #' @param output_path folder path for output timeseries if write == TRUE
 #' @returns returns a data frame of the combined time series
 #' @examples
-#' aq_get_ts_multi_param(cdec_code = "SJW",  parameters = c("Turbidity, Form Neph", "Water Temp", "Sp Cond"), query_from = "2025-12-01T00:00:00Z", query_to = "2026-01-01T00:00:00Z")
-#' aq_get_ts_multi_param(location_id = "11447903", parameters = c("Sp Cond", "Water Temp", "CHL RFU"), query_from = "2025-12-01T00:00:00Z", query_to = lubridate::now(), write = TRUE, output = here::here())
+#' multi_param_ts <- aq_get_ts_multi_param(cdec_code = "SJW",  parameters = c("Turbidity, Form Neph", "Water Temp", "Sp Cond"), query_from = "2025-12-01T00:00:00Z", query_to = "2026-01-01T00:00:00Z")
+#' multi_param_ts <- aq_get_ts_multi_param(location_id = "11447903", parameters = c("Sp Cond", "Water Temp", "CHL RFU"), query_from = "2025-12-01T00:00:00Z", query_to = lubridate::now(), write = TRUE, output = here::here())
 
 aq_get_ts_multi_param <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NULL,
                                   parameters, query_from, query_to,
