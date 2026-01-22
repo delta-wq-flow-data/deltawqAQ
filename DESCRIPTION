@@ -20,4 +20,5 @@ Imports:
     here,
     httr2,
     jsonlite,
-    purrr
+    purrr,
+    tidyr
