@@ -1,4 +1,11 @@
-### Function to get list of specific parameters from a station
+#' @title Get Station Parameters
+#' @description `aq_get_lstation_parameters` obtains a list of all the parameters associated with a station or stations of interest.
+#' @details This function obtains the list of parameters (IDs, names) and specific timeseries associated with queried stations
+#' @param cdec_code three-letter code for station from \href{cdec.ca.gov}{CDEC}; one option for querying
+#' @param location_id numeric id for station; one option for querying
+#' @param aq_location_id location id, as displayed in Aquarius database (combo of location_id and cdec_code); one option for querying
+#' @returns returns data frame of parameters filtered to queried station(s)
+#'
 aq_get_station_parameters = function(cdec_code=NULL, location_id=NULL, aq_location_id=NULL) {
 
   # Get station info for all locations

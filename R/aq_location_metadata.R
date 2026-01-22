@@ -1,14 +1,28 @@
-## Get location metadata, including latitude and longitude. we may want to add more things like county in the future.
+#' @title Get Location Metadata
+#' @description `aq_get_location_metadata` obtains metadata for a selection of stations.
+#' @details This function obtains metadata for all the locations, then filters to stations of interest.
+#' @param cdec_code three-letter code for station from \href{cdec.ca.gov}{CDEC}; one option for querying
+#' @param location_id numeric id for station; one option for querying
+#' @param aq_location_id location id, as displayed in Aquarius database (combo of location_id and cdec_code); one option for querying
+#' @returns data frame of filtered stations and station metadata in Aquarius database
+#'
 aq_get_location_metadata = function(cdec_code = NULL, location_id = NULL, aq_location_id = NULL) {
 
   # run all locations metadata and get list of all stations
   data <- aq_get_location_list()
 
   # Looks for either cdec code, location_id, or aq_location_id within all stations
-  data_filtered <- data %>%
-    {if (!is.null(cdec_code)) filter(., cdec_code %in% cdec_code) else .} %>%
-    {if (!is.null(location_id)) filter(., location_id %in% location_id) else .} %>%
-    {if (!is.null(aq_location_id)) filter(., aq_location_id %in% aq_location_id) else .}
+  data_filtered <- data
+
+  if (!is.null(cdec_code)) {
+    data_filtered <- data_filtered %>% filter(cdec_code %in% .env$cdec_code)
+  }
+  if (!is.null(location_id)) {
+    data_filtered <- data_filtered %>% filter(location_id %in% .env$location_id)
+  }
+  if (!is.null(aq_location_id)) {
+    data_filtered <- data_filtered %>% filter(aq_location_id %in% .env$aq_location_id)
+  }
 
   # Return df
   return(data_filtered)
@@ -16,16 +30,23 @@ aq_get_location_metadata = function(cdec_code = NULL, location_id = NULL, aq_loc
 }
 
 
-### Function to get metadata for all locations
-aq_get_location_list  <- function() {
+#' @title Get Location Metadata for all Locations
+#' @description `aq_get_location_list` obtains the full list of stations, including metadata
+#' @details This function obtains metadata for all the locations and can be used with aq_get_location_metadata to filter information
+#' to stations of interest.
+#' @param connect TRUE/FALSE value indicates whether or not connection to Aquarius is needed. When this function is called within
+#' other functions that have already connected to the database, this value should be FALSE to avoid errors.
+#' @returns data frame of all stations and station metadata in Aquarius database
 
-  # Function to connect to aquarius
-  aq_connect(server_hostname = Sys.getenv("AQTS_SERVER"),
-             username = Sys.getenv("AQTS_USERNAME"),
-             password = Sys.getenv("AQTS_PASSWORD"))
+aq_get_location_list  <- function(connect = TRUE) {
 
-  # Ensure disconnect on exit
-  on.exit(aq_disconnect())
+  # Only connect if requested
+  if (connect) {
+    aq_connect(server_hostname = Sys.getenv("AQTS_SERVER"),
+               username = Sys.getenv("AQTS_USERNAME"),
+               password = Sys.getenv("AQTS_PASSWORD"))
+    on.exit(aq_disconnect())
+  }
 
   # Location description call provides list of all locations if no parameters are called;
   # otherwise filters to selected stations(s)
@@ -62,8 +83,8 @@ aq_get_location_list  <- function() {
       aq_location_id = .x$Identifier,
       latitude = .x$Latitude,
       longitude = .x$Longitude)) %>%
-    left_join(df) %>%
-    select(cdec_code, location_id, location_name, latitude, longitude, aq_location_id, aq_station_name, aq_unique_id, updated_at)
+    dplyr::left_join(df) %>%
+    dplyr::select(cdec_code, location_id, location_name, latitude, longitude, aq_location_id, aq_station_name, aq_unique_id, updated_at)
 
   # Return data frame
   return(location_df)
