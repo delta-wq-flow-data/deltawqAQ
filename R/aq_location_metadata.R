@@ -6,7 +6,7 @@
 #' @param aq_location_id location id, as displayed in Aquarius database (combo of location_id and cdec_code); one option for querying
 #' @returns data frame of filtered stations and station metadata in Aquarius database
 #' @examples
-#' aq_get_location_metadata(cdec_code = "SJW")
+#' SJW_metadata <- aq_get_location_metadata(cdec_code = "SJW")
 #' aq_get_location_metadata(location_id = "11447903")
 #'
 #'
@@ -42,7 +42,7 @@ aq_get_location_metadata = function(cdec_code = NULL, location_id = NULL, aq_loc
 #' other functions that have already connected to the database, this value should be FALSE to avoid errors.
 #' @returns data frame of all stations and station metadata in Aquarius database
 #' @examples
-#' aq_get_location_list(connect = TRUE)
+#' all_locations <- aq_get_location_list(connect = TRUE)
 
 aq_get_location_list  <- function(connect = TRUE) {
 
