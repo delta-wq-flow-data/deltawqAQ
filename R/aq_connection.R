@@ -8,7 +8,6 @@
 #' @param password password for database
 #' @param timeout_seconds number of seconds hanging before connection times out
 
-
 aq_connect <- function(server_hostname, username, password, timeout_seconds=30) {
   # Attempt connection with error handling
   tryCatch({

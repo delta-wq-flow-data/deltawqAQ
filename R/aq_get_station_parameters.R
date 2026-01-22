@@ -7,7 +7,11 @@
 #' @param connect TRUE/FALSE value indicates whether or not connection to Aquarius is needed. When this function is called within
 #' other functions that have already connected to the database, this value should be FALSE to avoid errors.
 #' @returns returns data frame of parameters filtered to queried station(s)
-#'
+#' @examples
+#' aq_get_station_parameters(cdec_code = "SJW")
+#' aq_get_station_parameters(cdec_code = c("SJW", "MDM", "GES"))
+#' aq_get_station_parameters(location_id = c("11447903", "11447905", "11447890"))
+
 aq_get_station_parameters = function(cdec_code=NULL, location_id=NULL, aq_location_id=NULL, connect = TRUE) {
 
   # Only connect if requested (for standalone use)
