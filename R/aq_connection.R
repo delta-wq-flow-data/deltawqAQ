@@ -1,13 +1,14 @@
 #' @title Connect to Aquarius
-#' @description `aq_connect` connects to the Aquarius database.
+#' @description `aq_connect` Connects to the Aquarius database.
 #' @details This function uses stored username and password to access the Aquarius database.
 #' The function also provides error messages if the connection is not successful.
 #' This function is often called in other functions in this package.
-#' @param server_hostname url for database
-#' @param username username for database
-#' @param password password for database
-#' @param timeout_seconds number of seconds hanging before connection times out
-
+#' @param server_hostname URL for database
+#' @param username Username for database
+#' @param password Password for database
+#' @param timeout_seconds Nmber of seconds hanging before connection times out
+#'
+#' @export
 aq_connect <- function(server_hostname, username, password, timeout_seconds=30) {
   # Attempt connection with error handling
   tryCatch({

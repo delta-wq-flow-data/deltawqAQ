@@ -1,15 +1,22 @@
 #' @title Get Location Metadata
-#' @description `aq_get_location_metadata` obtains metadata for a selection of stations.
-#' @details This function obtains metadata for all the locations, then filters to stations of interest.
-#' @param cdec_code three-letter code for station from \href{cdec.ca.gov}{CDEC}; one option for querying
-#' @param location_id numeric id for station; one option for querying
-#' @param aq_location_id location id, as displayed in Aquarius database (combo of location_id and cdec_code); one option for querying
-#' @returns data frame of filtered stations and station metadata in Aquarius database
+
+#' @description `aq_get_location_metadata` retrieves metadata from Aquarius database for a selection of locations.
+
+#' @details This function retrieves metadata for all the locations, then filters to locations of interest.
+
+#' @param cdec_code Three-letter location code matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying
+#' @param location_id Numeric identifier for location; one option for querying
+#' @param aq_location_id Location identifier as displayed in Aquarius database; one option for querying
+
+#' @return A data frame of filtered stations and station metadata in Aquarius database
+
 #' @examples
+#' \dontrun{
 #' SJW_metadata <- aq_get_location_metadata(cdec_code = "SJW")
 #' aq_get_location_metadata(location_id = "11447903")
-#'
-#'
+#' }
+
+#' @export
 aq_get_location_metadata = function(cdec_code = NULL, location_id = NULL, aq_location_id = NULL) {
 
   # run all locations metadata and get list of all stations
@@ -34,16 +41,25 @@ aq_get_location_metadata = function(cdec_code = NULL, location_id = NULL, aq_loc
 }
 
 
-#' @title Get Location Metadata for all Locations
-#' @description `aq_get_location_list` obtains the full list of stations, including metadata
-#' @details This function obtains metadata for all the locations and can be used with aq_get_location_metadata to filter information
-#' to stations of interest.
-#' @param connect TRUE/FALSE value indicates whether or not connection to Aquarius is needed. When this function is called within
-#' other functions that have already connected to the database, this value should be FALSE to avoid errors.
-#' @returns data frame of all stations and station metadata in Aquarius database
-#' @examples
-#' all_locations <- aq_get_location_list(connect = TRUE)
 
+#' @title Get Location Metadata for all Locations
+
+#' @description `aq_get_location_list` retrieves the full list of stations, including metadata
+
+#' @details This function retrieves metadata for all the locations and can be used with aq_get_location_metadata to filter information
+#' to stations of interest.
+
+#' @param connect Logical value indicates whether or not connection to Aquarius is needed. When this function is called within
+#' other functions that have already connected to the database, this value should be `FALSE` to avoid errors.
+
+#' @return A data frame of all stations and station metadata in Aquarius database
+
+#' @examples
+#' \dontrun{
+#' all_locations <- aq_get_location_list(connect = TRUE)
+#' }
+
+#' @export
 aq_get_location_list  <- function(connect = TRUE) {
 
   # Only connect if requested

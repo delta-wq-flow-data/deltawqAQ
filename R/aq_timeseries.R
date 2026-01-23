@@ -1,23 +1,42 @@
 #' @title Get Aquarius Timeseries
-#' @description `aq_get_ts` obtains and optionally downloads timeseries.
-#' @details This function obtains timeseries data for one station and one parameter.
+#'
+#' @description `aq_get_ts` retrieves time series data from an Aquarius database and optionally downloads and writes the timeseries.
+#'
+#' @details This function retrieves timeseries data for a single location and a single parameter.
+#' Exactly one value of either `cdec_code`, `location_id`, or `aq_location_id` should be provided and identified by the location identifier type.
 #' The downloaded file can then be saved in your chosen filepath.
-#' @param cdec_code three-letter code for station from \href{cdec.ca.gov}{CDEC}; one option for querying
-#' @param location_id numeric id for station; one option for querying
-#' @param aq_location_id location id, as displayed in Aquarius database (combo of location_id and cdec_code); one option for querying
-#' @param parameter parameter name
-#' @param query_from start datetime for query
-#' @param query_to end datetime for query
-#' @param write TRUE/FALSE for whether to write the output timeseries
-#' @param output_path folder path for output timeseries if write == TRUE
-#' @returns returns a data frame of the time series as well as location codes
+#' @param cdec_code Three-letter location code matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying
+#' @param location_id Numeric identifier for location; one option for querying
+#' @param aq_location_id Location identifier as displayed in Aquarius database; one option for querying
+#' @param parameter Parameter name
+#' @param query_from Start datetime for query
+#' @param query_to End datetime for query
+#' @param write Logical; whether to write the output timeseries
+#' @param output Folder path for output timeseries if `write` is `TRUE`.
+#'
+#' @return A data frame containing the time series values and associated metadata.
 #' @examples
-#' ts_data <- aq_get_ts(cdec_code = "SJW", parameter = "Water Temp", query_from = "2025-12-01T00:00:00Z", query_to = "2026-01-01T00:00:00Z")
-#' ts_data <- aq_get_ts(location_id = "11447903", parameter = "Sp Cond", query_from = "2025-12-01T00:00:00Z", query_to = lubridate::now(), write = TRUE, output = here::here())
+#' \dontrun{
+#'ts_data <- aq_get_ts(
+#'  cdec_code = "SJW",
+#'  parameter = "Water Temp",
+#'  query_from = "2025-12-01T00:00:00Z",
+#'  query_to = "2026-01-01T00:00:00Z")
+#'ts_data <- aq_get_ts(
+#'  location_id = "11447903",
+#'  parameter = "Sp Cond",
+#'  query_from = "2025-12-01T00:00:00Z",
+#'  query_to = lubridate::now(),
+#'  write = TRUE,
+#'  output = here::here()
+#'  )
+#'  }
+#'
+#' @export
 
 aq_get_ts <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NULL,
                       parameter, query_from, query_to,
-                      write = FALSE, output_path = NULL) {
+                      write = FALSE, output = NULL) {
 
   # Connect once at the start
   aq_connect(server_hostname = Sys.getenv("AQTS_SERVER"),
@@ -73,8 +92,8 @@ aq_get_ts <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NUL
 
   # Write to CSV if requested
   if (isTRUE(write)) {
-    output_file <- if (!is.null(output_path)) {
-      here::here(output_path, paste0(station_code, "_", parameter, "_data.csv"))
+    output_file <- if (!is.null(output)) {
+      here::here(output, paste0(station_code, "_", parameter, "_data.csv"))
     } else {
       here::here(paste0(station_code, "_", parameter, "_data.csv"))
     }
@@ -93,15 +112,18 @@ aq_get_ts <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NUL
 }
 
 #' @title Process Aquarius Timeseries
-#' @description `aq_process_ts` processes the timeseries once obtained from Aquarius.
-#' @details This function cleans up the cleans up the json format data obtained by the Aquarius API request.
-#' The function is called in the get_timeseries functions as an intermediate step.
-#' @param station_code Aquarius station code of interest
-#' @param parameter parameter name from Aquarius
-#' @param query_from start datetime for query
-#' @param query_to end datetime for query
-#' @returns returns a data frame with timeseries information that will be further modified in get_ts functions
-
+#'
+#' @description `aq_process_ts` Processes the timeseries into a clean data frame after Aquarius database retrieval.
+#'
+#' @details This function cleans up the JSON format data obtained by the Aquarius API request.
+#' The function is called in the `get_ts` functions as an intermediate step.
+#'
+#' @param station_code Aquarius station/location code of interest
+#' @param parameter Parameter name from Aquarius
+#' @param query_from Start datetime for query
+#' @param query_to End datetime for query
+#'
+#' @return A data frame with 7 columns that will be further modified in `get_ts` functions
 aq_process_ts = function(station_code, parameter, query_from, query_to) {
 
   filtered_params <- aq_get_station_parameters(aq_location_id = station_code, connect = FALSE)
@@ -172,25 +194,46 @@ aq_process_ts = function(station_code, parameter, query_from, query_to) {
 }
 
 #' @title Get Aquarius Timeseries for Multiple Stations
-#' @description `aq_get_ts_multi_station` obtains and optionally downloads timeseries for one parameter at multiple stations.
-#' @details This function obtains timeseries data for one station and multiple parameters.
+#'
+#' @description `aq_get_ts_multi_station` retrieves and optionally downloads timeseries for one parameter at multiple locations
+#'
+#' @details This function retrieves timeseries data for multiple locations and a single parameter.
+#' A list of values for either `cdec_code`, `location_id`, or `aq_location_id` should be provided and identified by the location identifier type.
 #' The downloaded file can then be saved in your chosen filepath.
-#' @param cdec_code list of three-letter codes for station from \href{cdec.ca.gov}{CDEC}; one option for querying
-#' @param location_id list of numeric ids for station; one option for querying
-#' @param aq_location_id list of location ids, as displayed in Aquarius database (combo of location_id and cdec_code); one option for querying
-#' @param parameters parameter name
-#' @param query_from start datetime for query
-#' @param query_to end datetime for query
-#' @param write TRUE/FALSE for whether to write the output timeseries
-#' @param output_path folder path for output timeseries if write == TRUE
-#' @returns returns a data frame of the combined time series
+#'
+#' @param cdec_code List of three-letter location codes matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying
+#' @param location_id List of numeric identifiers for location; one option for querying
+#' @param aq_location_id List of location identifiers as displayed in Aquarius database; one option for querying
+#' @param parameter Parameter name
+#' @param query_from Start datetime for query
+#' @param query_to End datetime for query
+#' @param write Logical indicating whether to write the output timeseries
+#' @param output Folder path for output timeseries if `write` is TRUE
+#'
+#' @return A data frame of the combined time series for all stations
+#' If `write` is TRUE, individual files will be written for each station.
+#'
 #' @examples
-#' multi_sta_ts <- aq_get_ts_multi_station(cdec_code = c("SJW", "MDM", "GSS"),  parameter = "Turbidity, Form Neph", query_from = "2025-12-01T00:00:00Z", query_to = "2026-01-01T00:00:00Z")
-#' multi_sta_ts <- aq_get_ts_multi_station(location_id = c("11447903", "11447905", "11447890"), parameter = "Sp Cond", query_from = "2025-12-01T00:00:00Z", query_to = lubridate::now(), write = TRUE, output = here::here())
-
+#' \dontrun{
+#' multi_sta_ts <- aq_get_ts_multi_station(
+#'   cdec_code = c("SJW", "MDM", "GSS"),
+#'   parameter = "Turbidity, Form Neph",
+#'   query_from = "2025-12-01T00:00:00Z",
+#'   query_to = "2026-01-01T00:00:00Z")
+#' multi_sta_ts <- aq_get_ts_multi_station(
+#'   location_id = c("11447903", "11447905", "11447890"),
+#'   parameter = "Sp Cond",
+#'   query_from = "2025-12-01T00:00:00Z",
+#'   query_to = lubridate::now(),
+#'   write = TRUE,
+#'   output = here::here()
+#'   )
+#'   }
+#'
+#'@export
 aq_get_ts_multi_station <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NULL,
                                     parameter, query_from, query_to,
-                                    write = FALSE, output_path = NULL) {
+                                    write = FALSE, output = NULL) {
 
   # Connect once at the start
   aq_connect(server_hostname = Sys.getenv("AQTS_SERVER"),
@@ -259,8 +302,8 @@ aq_get_ts_multi_station <- function(cdec_code = NULL, location_id = NULL, aq_loc
           dplyr::filter(aq_location_id == station) |>
           dplyr::pull(cdec_code)
 
-        output_file <- if (!is.null(output_path)) {
-          here::here(output_path, paste0(station_name, "_", parameter, "_data.csv"))
+        output_file <- if (!is.null(output)) {
+          here::here(output, paste0(station_name, "_", parameter, "_data.csv"))
         } else {
           here::here(paste0(station_name, "_", parameter, "_data.csv"))
         }
@@ -299,25 +342,47 @@ aq_get_ts_multi_station <- function(cdec_code = NULL, location_id = NULL, aq_loc
 }
 
 #' @title Get Aquarius Timeseries for Multiple Parameters
-#' @description `aq_get_ts_multi_param` obtains and optionally downloads timeseries for multiple parameters at one station.
-#' @details This function obtains timeseries data for one station and multiple parameters.
+#'
+#' @description `aq_get_ts_multi_param` retrieves and optionally downloads timeseries for multiple parameters at one location
+#'
+#' @details This function retrieves timeseries data for multiple parameters and a single location.
+#' A single value for either `cdec_code`, `location_id`, or `aq_location_id` should be provided and identified by the location identifier type.
+#' A list of parameters should be provided.
 #' The downloaded file can then be saved in your chosen filepath.
-#' @param cdec_code three-letter code for station from \href{cdec.ca.gov}{CDEC}; one option for querying
-#' @param location_id numeric id for station; one option for querying
-#' @param aq_location_id location id, as displayed in Aquarius database (combo of location_id and cdec_code); one option for querying
-#' @param parameters list of parameter names to query
-#' @param query_from start datetime for query
-#' @param query_to end datetime for query
-#' @param write TRUE/FALSE for whether to write the output timeseries
-#' @param output_path folder path for output timeseries if write == TRUE
-#' @returns returns a data frame of the combined time series
+#'
+#' @param cdec_code Three-letter location code matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying
+#' @param location_id Numeric identifier for location; one option for querying
+#' @param aq_location_id Location identifier as displayed in Aquarius database; one option for querying
+#' @param parameter List of parameter names
+#' @param query_from Start datetime for query
+#' @param query_to End datetime for query
+#' @param write Logical indicating whether to write the output timeseries
+#' @param output Folder path for output timeseries if `write` is TRUE
+#'
+#' @return A data frame of the combined time series for all parameters
+#' If `write` is TRUE, individual files will be written for each parameter.
+#'
 #' @examples
-#' multi_param_ts <- aq_get_ts_multi_param(cdec_code = "SJW",  parameters = c("Turbidity, Form Neph", "Water Temp", "Sp Cond"), query_from = "2025-12-01T00:00:00Z", query_to = "2026-01-01T00:00:00Z")
-#' multi_param_ts <- aq_get_ts_multi_param(location_id = "11447903", parameters = c("Sp Cond", "Water Temp", "CHL RFU"), query_from = "2025-12-01T00:00:00Z", query_to = lubridate::now(), write = TRUE, output = here::here())
-
+#' \dontrun{
+#' multi_param_ts <- aq_get_ts_multi_param(
+#'   cdec_code = "SJW",
+#'   parameter = c("Turbidity, Form Neph", "Water Temp", "Sp Cond"),
+#'   query_from = "2025-12-01T00:00:00Z",
+#'   query_to = "2026-01-01T00:00:00Z")
+#' multi_param_ts <- aq_get_ts_multi_param(
+#'   location_id = "11447903",
+#'   parameter = c("Sp Cond", "Water Temp", "CHL RFU"),
+#'   query_from = "2025-12-01T00:00:00Z",
+#'   query_to = lubridate::now(),
+#'   write = TRUE,
+#'   output = here::here()
+#'   )
+#' }
+#'
+#' @export
 aq_get_ts_multi_param <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NULL,
-                                  parameters, query_from, query_to,
-                                  write = FALSE, output_path = NULL){
+                                  parameter, query_from, query_to,
+                                  write = FALSE, output = NULL){
   # Connect once at the start
   aq_connect(server_hostname = Sys.getenv("AQTS_SERVER"),
              username = Sys.getenv("AQTS_USERNAME"),
@@ -356,14 +421,14 @@ aq_get_ts_multi_param <- function(cdec_code = NULL, location_id = NULL, aq_locat
   station_code <- data_filtered$aq_location_id[1]
 
   # Show progress message
-  cli::cli_alert_info("Processing {length(parameters)} parameter{?s} for station: {station_code}")
+  cli::cli_alert_info("Processing {length(parameter)} parameter{?s} for station: {station_code}")
 
   # Track successes and failures
   successful_params <- character()
   failed_params <- character()
 
   # Process each parameter and collect results
-  all_ts_data <- purrr::map_df(parameters, function(param) {
+  all_ts_data <- purrr::map_df(parameter, function(param) {
     tryCatch({
       cli::cli_alert_info("Processing parameter: {param}")
 
@@ -387,8 +452,8 @@ aq_get_ts_multi_param <- function(cdec_code = NULL, location_id = NULL, aq_locat
       if (isTRUE(write)) {
         station_name <- data_filtered$cdec_code[1]
 
-        output_file <- if (!is.null(output_path)) {
-          here::here(output_path, paste0(station_name, "_", param, "_data.csv"))
+        output_file <- if (!is.null(output)) {
+          here::here(output, paste0(station_name, "_", param, "_data.csv"))
         } else {
           here::here(paste0(station_name, "_", param, "_data.csv"))
         }
