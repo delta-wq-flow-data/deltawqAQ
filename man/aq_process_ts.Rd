@@ -7,21 +7,21 @@
 aq_process_ts(station_code, parameter, query_from, query_to)
 }
 \arguments{
-\item{station_code}{Aquarius station code of interest}
+\item{station_code}{Aquarius station/location code of interest}
 
-\item{parameter}{parameter name from Aquarius}
+\item{parameter}{Parameter name from Aquarius}
 
-\item{query_from}{start datetime for query}
+\item{query_from}{Start datetime for query}
 
-\item{query_to}{end datetime for query}
+\item{query_to}{End datetime for query}
 }
 \value{
-returns a data frame with timeseries information that will be further modified in get_ts functions
+A data frame with 7 columns that will be further modified in `get_ts` functions
 }
 \description{
-`aq_process_ts` processes the timeseries once obtained from Aquarius.
+`aq_process_ts` Processes the timeseries into a clean data frame after Aquarius database retrieval.
 }
 \details{
-This function cleans up the cleans up the json format data obtained by the Aquarius API request.
-The function is called in the get_timeseries functions as an intermediate step.
+This function cleans up the JSON format data obtained by the Aquarius API request.
+The function is called in the `get_ts` functions as an intermediate step.
 }

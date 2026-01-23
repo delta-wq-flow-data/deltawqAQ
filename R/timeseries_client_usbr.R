@@ -519,7 +519,7 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                   #' The getTimeSeriesData() method is usually a better choice, since it can pull corrected data from multiple time-series.
                                   #' But when you need to look at the metadata of a time-series, this method is required.
                                   #'
-                                  #' @param timeSeriesIdentifier
+                                  #' @param timeSeriesIdentifier identifer for the timeseries
                                   #' @return The corrected data and metadata for the time-series
                                   getTimeSeriesCorrectedData = function (timeSeriesIdentifier, queryFrom, queryTo, getParts, includeGapMarkers) {
 

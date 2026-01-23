@@ -12,37 +12,52 @@ aq_get_ts(
   query_from,
   query_to,
   write = FALSE,
-  output_path = NULL
+  output = NULL
 )
 }
 \arguments{
-\item{cdec_code}{three-letter code for station from \href{cdec.ca.gov}{CDEC}; one option for querying}
+\item{cdec_code}{Three-letter location code matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying}
 
-\item{location_id}{numeric id for station; one option for querying}
+\item{location_id}{Numeric identifier for location; one option for querying}
 
-\item{aq_location_id}{location id, as displayed in Aquarius database (combo of location_id and cdec_code); one option for querying}
+\item{aq_location_id}{Location identifier as displayed in Aquarius database; one option for querying}
 
-\item{parameter}{parameter name}
+\item{parameter}{Parameter name}
 
-\item{query_from}{start datetime for query}
+\item{query_from}{Start datetime for query}
 
-\item{query_to}{end datetime for query}
+\item{query_to}{End datetime for query}
 
-\item{write}{TRUE/FALSE for whether to write the output timeseries}
+\item{write}{Logical; whether to write the output timeseries}
 
-\item{output_path}{folder path for output timeseries if write == TRUE}
+\item{output}{Folder path for output timeseries if `write` is `TRUE`.}
 }
 \value{
-returns a data frame of the time series as well as location codes
+A data frame containing the time series values and associated metadata.
 }
 \description{
-`aq_get_ts` obtains and optionally downloads timeseries.
+`aq_get_ts` retrieves time series data from an Aquarius database and optionally downloads and writes the timeseries.
 }
 \details{
-This function obtains timeseries data for one station and one parameter.
+This function retrieves timeseries data for a single location and a single parameter.
+Exactly one value of either `cdec_code`, `location_id`, or `aq_location_id` should be provided and identified by the location identifier type.
 The downloaded file can then be saved in your chosen filepath.
 }
 \examples{
-ts_data <- aq_get_ts(cdec_code = "SJW", parameter = "Water Temp", query_from = "2025-12-01T00:00:00Z", query_to = "2026-01-01T00:00:00Z")
-ts_data <- aq_get_ts(location_id = "11447903", parameter = "Sp Cond", query_from = "2025-12-01T00:00:00Z", query_to = lubridate::now(), write = TRUE, output = here::here())
+\dontrun{
+ts_data <- aq_get_ts(
+ cdec_code = "SJW",
+ parameter = "Water Temp",
+ query_from = "2025-12-01T00:00:00Z",
+ query_to = "2026-01-01T00:00:00Z")
+ts_data <- aq_get_ts(
+ location_id = "11447903",
+ parameter = "Sp Cond",
+ query_from = "2025-12-01T00:00:00Z",
+ query_to = lubridate::now(),
+ write = TRUE,
+ output = here::here()
+ )
+ }
+
 }

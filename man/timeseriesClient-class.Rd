@@ -16,8 +16,6 @@
 
 \item{sourceVersion}{Optional source version string. If missing, use the connected server version}
 
-\item{timeSeriesIdentifier}{A time-series identifier in <Parameter>.<Label>@<LocationIdentifier> syntax}
-
 \item{locationName}{Location Name (optional)}
 
 \item{isoText}{An ISO 8601 timestamp string}
@@ -47,6 +45,8 @@
 \item{queryTo}{Optional time to which data willl be retrieved. If missing, fetches data to the end-of-record}
 
 \item{outputUnitIds}{Optional unit IDs for output. If missing or empty, the default unit of the time-series will be used}
+
+\item{timeSeriesIdentifier}{identifer for the timeseries}
 }
 \value{
 TRUE if the target version is strictly less than the source version

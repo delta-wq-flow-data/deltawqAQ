@@ -7,16 +7,16 @@
 aq_connect(server_hostname, username, password, timeout_seconds = 30)
 }
 \arguments{
-\item{server_hostname}{url for database}
+\item{server_hostname}{URL for database}
 
-\item{username}{username for database}
+\item{username}{Username for database}
 
-\item{password}{password for database}
+\item{password}{Password for database}
 
-\item{timeout_seconds}{number of seconds hanging before connection times out}
+\item{timeout_seconds}{Nmber of seconds hanging before connection times out}
 }
 \description{
-`aq_connect` connects to the Aquarius database.
+`aq_connect` Connects to the Aquarius database.
 }
 \details{
 This function uses stored username and password to access the Aquarius database.

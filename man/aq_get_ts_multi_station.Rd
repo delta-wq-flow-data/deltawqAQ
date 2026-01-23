@@ -12,37 +12,53 @@ aq_get_ts_multi_station(
   query_from,
   query_to,
   write = FALSE,
-  output_path = NULL
+  output = NULL
 )
 }
 \arguments{
-\item{cdec_code}{list of three-letter codes for station from \href{cdec.ca.gov}{CDEC}; one option for querying}
+\item{cdec_code}{List of three-letter location codes matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying}
 
-\item{location_id}{list of numeric ids for station; one option for querying}
+\item{location_id}{List of numeric identifiers for location; one option for querying}
 
-\item{aq_location_id}{list of location ids, as displayed in Aquarius database (combo of location_id and cdec_code); one option for querying}
+\item{aq_location_id}{List of location identifiers as displayed in Aquarius database; one option for querying}
 
-\item{query_from}{start datetime for query}
+\item{parameter}{Parameter name}
 
-\item{query_to}{end datetime for query}
+\item{query_from}{Start datetime for query}
 
-\item{write}{TRUE/FALSE for whether to write the output timeseries}
+\item{query_to}{End datetime for query}
 
-\item{output_path}{folder path for output timeseries if write == TRUE}
+\item{write}{Logical indicating whether to write the output timeseries}
 
-\item{parameters}{parameter name}
+\item{output}{Folder path for output timeseries if `write` is TRUE}
 }
 \value{
-returns a data frame of the combined time series
+A data frame of the combined time series for all stations
+If `write` is TRUE, individual files will be written for each station.
 }
 \description{
-`aq_get_ts_multi_station` obtains and optionally downloads timeseries for one parameter at multiple stations.
+`aq_get_ts_multi_station` retrieves and optionally downloads timeseries for one parameter at multiple locations
 }
 \details{
-This function obtains timeseries data for one station and multiple parameters.
+This function retrieves timeseries data for multiple locations and a single parameter.
+A list of values for either `cdec_code`, `location_id`, or `aq_location_id` should be provided and identified by the location identifier type.
 The downloaded file can then be saved in your chosen filepath.
 }
 \examples{
-multi_sta_ts <- aq_get_ts_multi_station(cdec_code = c("SJW", "MDM", "GSS"),  parameter = "Turbidity, Form Neph", query_from = "2025-12-01T00:00:00Z", query_to = "2026-01-01T00:00:00Z")
-multi_sta_ts <- aq_get_ts_multi_station(location_id = c("11447903", "11447905", "11447890"), parameter = "Sp Cond", query_from = "2025-12-01T00:00:00Z", query_to = lubridate::now(), write = TRUE, output = here::here())
+\dontrun{
+multi_sta_ts <- aq_get_ts_multi_station(
+  cdec_code = c("SJW", "MDM", "GSS"),
+  parameter = "Turbidity, Form Neph",
+  query_from = "2025-12-01T00:00:00Z",
+  query_to = "2026-01-01T00:00:00Z")
+multi_sta_ts <- aq_get_ts_multi_station(
+  location_id = c("11447903", "11447905", "11447890"),
+  parameter = "Sp Cond",
+  query_from = "2025-12-01T00:00:00Z",
+  query_to = lubridate::now(),
+  write = TRUE,
+  output = here::here()
+  )
+  }
+
 }

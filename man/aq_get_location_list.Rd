@@ -7,19 +7,21 @@
 aq_get_location_list(connect = TRUE)
 }
 \arguments{
-\item{connect}{TRUE/FALSE value indicates whether or not connection to Aquarius is needed. When this function is called within
-other functions that have already connected to the database, this value should be FALSE to avoid errors.}
+\item{connect}{Logical value indicates whether or not connection to Aquarius is needed. When this function is called within
+other functions that have already connected to the database, this value should be `FALSE` to avoid errors.}
 }
 \value{
-data frame of all stations and station metadata in Aquarius database
+A data frame of all stations and station metadata in Aquarius database
 }
 \description{
-`aq_get_location_list` obtains the full list of stations, including metadata
+`aq_get_location_list` retrieves the full list of stations, including metadata
 }
 \details{
-This function obtains metadata for all the locations and can be used with aq_get_location_metadata to filter information
+This function retrieves metadata for all the locations and can be used with aq_get_location_metadata to filter information
 to stations of interest.
 }
 \examples{
+\dontrun{
 all_locations <- aq_get_location_list(connect = TRUE)
+}
 }

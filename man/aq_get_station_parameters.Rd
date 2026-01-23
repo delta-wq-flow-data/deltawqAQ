@@ -12,26 +12,30 @@ aq_get_station_parameters(
 )
 }
 \arguments{
-\item{cdec_code}{three-letter code for station from \href{cdec.ca.gov}{CDEC}; one option for querying}
+\item{cdec_code}{Three-letter location code matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying}
 
-\item{location_id}{numeric id for station; one option for querying}
+\item{location_id}{Numeric identifier for location; one option for querying}
 
-\item{aq_location_id}{location id, as displayed in Aquarius database (combo of location_id and cdec_code); one option for querying}
+\item{aq_location_id}{Location identifier as displayed in Aquarius database; one option for querying}
 
-\item{connect}{TRUE/FALSE value indicates whether or not connection to Aquarius is needed. When this function is called within
-other functions that have already connected to the database, this value should be FALSE to avoid errors.}
+\item{connect}{Logical value indicates whether or not connection to Aquarius is needed. When this function is called within
+other functions that have already connected to the database, this value should be `FALSE` to avoid errors.}
 }
 \value{
-returns data frame of parameters filtered to queried station(s)
+A data frame of parameters filtered to queried location(s)
 }
 \description{
-`aq_get_station_parameters` obtains a list of all the parameters associated with a station or stations of interest.
+`aq_get_station_parameters` Retrieves a list of all the parameters associated with one or multiple locations.
 }
 \details{
-This function obtains the list of parameters (IDs, names) and specific timeseries associated with queried stations
+Retrieves the parameters (IDs, names) and specific timeseries identifiers associated with queried locations.
 }
 \examples{
+\dontrun{
 params_SJW <- aq_get_station_parameters(cdec_code = "SJW")
 params_SJW_MDM_GES <- aq_get_station_parameters(cdec_code = c("SJW", "MDM", "GES"))
-param_info <- aq_get_station_parameters(location_id = c("11447903", "11447905", "11447890"))
+param_info <- aq_get_station_parameters(location_id = c("11447903", "11447905", "11447890")
+)
+}
+
 }

@@ -11,24 +11,24 @@ aq_get_location_metadata(
 )
 }
 \arguments{
-\item{cdec_code}{three-letter code for station from \href{cdec.ca.gov}{CDEC}; one option for querying}
+\item{cdec_code}{Three-letter location code matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying}
 
-\item{location_id}{numeric id for station; one option for querying}
+\item{location_id}{Numeric identifier for location; one option for querying}
 
-\item{aq_location_id}{location id, as displayed in Aquarius database (combo of location_id and cdec_code); one option for querying}
+\item{aq_location_id}{Location identifier as displayed in Aquarius database; one option for querying}
 }
 \value{
-data frame of filtered stations and station metadata in Aquarius database
+A data frame of filtered stations and station metadata in Aquarius database
 }
 \description{
-`aq_get_location_metadata` obtains metadata for a selection of stations.
+`aq_get_location_metadata` retrieves metadata from Aquarius database for a selection of locations.
 }
 \details{
-This function obtains metadata for all the locations, then filters to stations of interest.
+This function retrieves metadata for all the locations, then filters to locations of interest.
 }
 \examples{
+\dontrun{
 SJW_metadata <- aq_get_location_metadata(cdec_code = "SJW")
 aq_get_location_metadata(location_id = "11447903")
-
-
+}
 }
