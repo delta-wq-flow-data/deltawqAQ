@@ -10,4 +10,5 @@
 # Should each function have its own file? Have read conflicting advice. Could also reorganize to put "helpers" in one file, and each
   # other function in its own.
 # How much do we want to get into tests/testthat?
+# Do we want to create vignettes when we have examples? Maybe an introductory one?
 
