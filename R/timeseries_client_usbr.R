@@ -1,9 +1,5 @@
 # From Aquarius: https://github.com/AquaticInformatics/examples/blob/master/TimeSeries/PublicApis/R/timeseries_client.R
 
-# Load dependencies
-library(jsonlite)
-library(httr)
-
 # Sys.setenv(http_proxy="http://localhost:8888") # Enables Fiddler capturing of traffic
 # Sys.setenv(http_proxy="") # Disables Fiddler proxying
 
@@ -19,20 +15,20 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                   isLegacy = "logical"),
                                 methods = list(
                                   #' Connects to an AQTS server
-                                  #' 
+                                  #'
                                   #' Once authenticated, all subsequent requests to the AQTS server will reuse the authenticated session
-                                  #' 
+                                  #'
                                   #' @param hostname A server name or IP address
                                   #' @param username The AQTS credentials username
                                   #' @param password The AQTS credentials password
-                                  #' @examples 
+                                  #' @examples
                                   #' connect("localhost", "admin", "admin") # When running R on your AQTS app server
                                   #' connect("myserver", "me", "mypassword") # Connect over the network
                                   #' connect("https://myserver", "user", "letmein") # Connect to an AQTS server with HTTPS enabled
                                   connect = function(hostname, username, password) {
                                     # Auto-configure the proxy by default
                                     .self$configureProxy()
-                                    
+
                                     # Support schemeless and schemed hosts for convenience
                                     prefix <- "http://"
                                     if (startsWith(hostname, "http://") || startsWith(hostname, "https://")) {
@@ -40,30 +36,30 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                       hostname <- paste0(url$scheme, "://", url$hostname)
                                       prefix <- ""
                                     }
-                                    
+
                                     # Grab the version of the AQTS server
                                     r <- GET(paste0(prefix, hostname, "/AQUARIUS/apps/v1/version"))
                                     stop_for_status(r, "detecting AQTS version")
-                                    
+
                                     j <- fromJSON(content(r, "text"))
                                     version <<- j$ApiVersion
-                                    
+
                                     # Anything earlier than 14.3 is considered legacy code
                                     isLegacy <<- .self$isVersionLessThan("14.3")
-                                    
+
                                     # Compose the base URI for all API endpoints
                                     publishUri <<- paste0(prefix, hostname, "/AQUARIUS/Publish/v2")
                                     acquisitionUri <<- paste0(prefix, hostname, "/AQUARIUS/Acquisition/v2")
                                     provisioningUri <<- paste0(prefix, hostname, "/AQUARIUS/Provisioning/v1")
-                                    
+
                                     if (isLegacy) {
                                       legacyPublishUri <<- paste0(prefix, hostname, "/AQUARIUS/Publish/AquariusPublishRestService.svc")
                                       legacyAcquisitionUri <<- paste0(prefix, hostname, "/AQUARIUS/AQAcquisitionService.svc")
                                     }
-                                    
+
                                     # Try to authenticate using the supplied credentials
                                     credentials <- list(Username = username, EncryptedPassword = password)
-                                    
+
                                     if (isLegacy) {
                                       # Authenticate via the older operation, so that a session cookie is set
                                       r <- GET(paste0(publishUri, "/GetAuthToken"), query = credentials)
@@ -73,10 +69,10 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                     }
                                     stop_for_status(r, "authenticate with AQTS")
                                   },
-                                  
+
                                   #' Disconnects immediately from an AQTS server
                                   disconnect = function() {
-                                    
+
                                     if (isLegacy) {
                                       # 3.X doesn't support proper disconnection, so just abandon the session below
                                     } else {
@@ -84,35 +80,35 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                       r <- DELETE(paste0(publishUri, "/session"))
                                       stop_for_status(r, "disconnect from AQTS")
                                     }
-                                    
+
                                     # Abandon all session cookies associated with the connection
                                     handle_reset(publishUri)
                                   },
-                                  
+
                                   #' Auto-configures the proxy to route all requests through Fiddler
                                   #'
                                   #' This method configures the R proxy to route everything through Fiddler if it is running
-                                  #' 
+                                  #'
                                   #' Sys.setenv(http_proxy="http://localhost:8888") # Enables Fiddler capturing of traffic
                                   #' Sys.setenv(http_proxy="") # Disables Fiddler proxying
                                   configureProxy = function() {
                                     if (length(Sys.getenv("R_DISABLE_FIDDLER")[0]) > 0 || Sys.info()['sysname'] != "Windows")
                                       return()
-                                    
+
                                     # Check if Fiddler is running
                                     taskCheck <- system('tasklist /FI "IMAGENAME eq Fiddler.exe"', intern = TRUE)
-                                    
+
                                     if (length(taskCheck) < 4)
                                       return()
-                                    
+
                                     # Fiddler is running, so enable the proxy
                                     message("Auto-routing all web requests through Fiddler.")
                                     message('To disable this behaviour, call Sys.setenv(http_proxy="") or set the R_DISABLE_FIDDLER environment variable.')
                                     Sys.setenv(http_proxy = "http://localhost:8888")
                                   },
-                                  
+
                                   #' Determines if a target version string is strictly less than a source version
-                                  #' 
+                                  #'
                                   #' This method takes dotted version strings and compares them by numerical components.
                                   #' It safely avoids the errors string comparison, which incorrectly says "3.10.510" > "17.2.123".
                                   #' @param targetVersion Target version string
@@ -122,42 +118,42 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                     if (missing(sourceVersion)) {
                                       sourceVersion <- version
                                     }
-                                    
+
                                     # Create the vectors of integers using this local sanitizing function
                                     createIntegerVector <- function(versionText) {
-                                      
+
                                       if (versionText == "0.0.0.0") {
                                         # Force unreleased developer builds to act as latest-n-greatest
                                         versionText <- "9999.99"
                                       }
-                                      
+
                                       # Convert the text into a vector of integers
                                       v <- as.integer(strsplit(versionText, ".", fixed = TRUE)[[1]])
-                                      
+
                                       if (length(v) > 0 && v[1] >= 14 && v[1] <= 99) {
                                         # Adjust the leading component to match the 20xx.y release convention
                                         v[1] = v[1] + 2000
                                       }
-                                      
+
                                       v
                                     }
-                                    
+
                                     # Convert to vectors of integers
                                     target <- createIntegerVector(targetVersion)
                                     source <- createIntegerVector(sourceVersion)
-                                    
+
                                     # Take the differnce of the common parts
                                     minlength <- min(length(target), length(source))
-                                    
+
                                     diff <- head(target, minlength) - head(source, minlength)
-                                    
+
                                     if (all(diff == 0)) {
                                       # All the common parts are identical
                                       length(source) < length(target)
                                     } else {
                                       # Assume not less than
                                       lessThan <- FALSE
-                                      
+
                                       for (d in diff) {
                                         if (d < 0) {
                                           break
@@ -166,15 +162,15 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                           break
                                         }
                                       }
-                                      
+
                                       lessThan
                                     }
                                   },
-                                  
+
                                   #' Gets the unique ID of a time-series from its identifier string
-                                  #' 
+                                  #'
                                   #' If the input string is already a unique ID, the input value is simply returned unmodified.
-                                  #' 
+                                  #'
                                   #' @param timeSeriesIdentifier A time-series identifier in <Parameter>.<Label>@<LocationIdentifier> syntax
                                   #' @return The unique ID of the time-series
                                   #' @examples
@@ -186,24 +182,24 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                     } else {
                                       # Parse out the location identifier
                                       location <- .self$getLocationIdentifier(timeSeriesIdentifier)
-                                      
+
                                       # Ask for all the time-series at that location
                                       r <- GET(paste0(publishUri, "/GetTimeSeriesDescriptionList"), query = list(LocationIdentifier = location))
                                       stop_for_status(r, paste("retrieve time-series at location", location))
-                                      
+
                                       # Find the unique ID by matching the full identifier
                                       j <- fromJSON(content(r, "text"))
                                       uniqueId <- j$TimeSeries$UniqueId[which(j$TimeSeries$Identifier == timeSeriesIdentifier)]
-                                      
+
                                       if (length(uniqueId) <= 0) {
                                         # Throw on the brakes
                                         stop("Can't find time-series '", timeSeriesIdentifier, "' in location '", location, "'.")
                                       }
-                                      
+
                                       uniqueId
                                     }
                                   },
-                                  
+
                                   #' Gets the location identifier from a time series identifier string
                                   #'
                                   #' @param timeSeriesIdentifier A time-series identifier in <Parameter>.<Label>@<LocationIdentifier> syntax
@@ -214,26 +210,26 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                     if (!grepl("@", timeSeriesIdentifier)) {
                                       stop(timeSeriesIdentifier, " is not a <Parameter>.<Label>@<Location> time-series identifier")
                                     }
-                                    
+
                                     strsplit(timeSeriesIdentifier, "@")[[1]][[2]]
                                   },
-                                  
+
                                   #' Gets location description from the database, including all locations if no locations specified
                                   #'
                                   #' @param locationName Location Name (optional)
                                   #' @return The name, identifier, unique ID of each location, folder, published
                                   #' @examples
                                   #' getLocationDescriptions("Stage.Working@MyLocation") # MyLocation
-                                  
+
                                   getLocationsDescriptions = function(locationName, locationIdentifier, locationFolder, tagKeys, tagValues, extendedFilters) {
-                                    
+
                                     if (missing(locationName))                  { locationName = NULL }
                                     if (missing(locationIdentifier))            { locationIdentifier = NULL }
                                     if (missing(locationFolder))                { locationFolder = NULL }
                                     if (missing(tagKeys))                       { tagKeys = NULL }
                                     if (missing(tagValues))                     { tagValues = NULL }
                                     if (missing(extendedFilters))               { extendedFilters = NULL }
-                                    
+
                                     q <- list(
                                       LocationName = locationName,
                                       LocationIdentifier = locationIdentifier,
@@ -241,54 +237,54 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                       TagKeys = tagKeys,
                                       TagValues = tagValues,
                                       ExtendedFilters = .self$toJSV(extendedFilters))
-                                    
+
                                     q <- q[!sapply(q, is.null)]
-                                    
+
                                     # Get all the location descriptions
                                     locations <- fromJSON(content(stop_for_status(
                                       GET(paste0(.self$publishUri, "/GetLocationDescriptionList"), query = q)
                                       , paste("get location description list for", locationIdentifier)), "text"))$LocationDescriptions
                                   },
-                                  
-                                  
-                                  
+
+
+
                                   #' Converts an item to JSV format, for GET request query parameter values
-                                  #' 
+                                  #'
                                   #' Converts vectors or named lists to JSV. Everything else is left unmodified.
-                                  #' 
+                                  #'
                                   #' Query parameters in a GET request need to be in JSV format.
                                   #' JSON body parameters in POST/PUT/DELETE requests do not need JSV formatting (they are, JSON)
-                                  #' 
+                                  #'
                                   #' https://github.com/ServiceStack/ServiceStack.Text/wiki/JSV-Format
-                                  #' 
+                                  #'
                                   toJSV = function(item) {
                                     if (is.list(item)) {
                                       if (is.null(names(item))) {
-                                        
+
                                         # Treat lists without names like a vector
                                         item = .self$toJSV(unlist(item))
                                       } else {
-                                        
+
                                         # List the key value pairs
                                         n = names(item)
                                         v = unlist(item)
                                         item <- .self$toJSV(sapply(seq_along(item), function (i) paste0(n[i], ":", v[i])))
                                       }
                                     } else if (is.vector(item)) {
-                                      
+
                                       # Commas separate arrays
                                       item <- paste0(item, collapse = ",")
                                     }
-                                    
+
                                     item
                                   },
-                                  
-                                  
+
+
                                   #' Parse an ISO 8601 timestamp into a POSIXct value
-                                  #' 
+                                  #'
                                   #' @param isoText An ISO 8601 timestamp string
                                   #' @return The equivalent POSIXct datetime
-                                  #' @examples 
+                                  #' @examples
                                   #' parseIso8601("2015-04-01T00:00:00Z") # April Fool's day, 2015 UTC
                                   #' parseIso8601("2015-04-01T00:00:00-08:00") # April Fool's day, 2015, Pacific Standard Time
                                   #'
@@ -317,7 +313,7 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                     # This function can process roughly 10K timestamps/sec.
                                     # By comparison, the popular-and-otherwise-correct lubridate library is 60x slower at ~ 150 timestamps per second
                                     len <- nchar(isoText)
-                                    
+
                                     if (substr(isoText, len - 2, len - 2) == ":") {
                                       # The most common scenario from AQTS output: A truly correct ISO 8601 timestamp with a numeric UTC offset
                                       # Strip out the colon separating the UTC offset, since that is what %z requires
@@ -327,27 +323,27 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                       # Convert the unsupported UTC shorthand into an offset with no effect
                                       isoText <- paste0(substr(isoText, 1, len - 1), "+0000")
                                     }
-                                    
+
                                     as.POSIXct(strptime(isoText, "%Y-%m-%dT%H:%M:%OS%z", "UTC"))
                                   },
-                                  
+
                                   #' Formats a datetime in ISO 8601 format
-                                  #' 
+                                  #'
                                   #' @param datetime A datetime object
                                   #' @return The time in YYYY-MM-DDTHH:mm:SS.fffffZ format
                                   formatIso8601 = function(datetime) {
                                     isoText <- strftime(datetime, "%Y-%m-%dT%H:%M:%OS%z", "UTC")
-                                    
+
                                     len <- nchar(isoText)
-                                    
+
                                     if (substr(isoText, len, len) != "Z") {
                                       # Inject the missing colon in the zone offset, so "+HHMM" becomes "+HH:MM"
                                       isoText = paste0(substr(isoText, 1, len - 2), ":", substr(isoText, len - 1, len))
                                     }
-                                    
+
                                     isoText
                                   },
-                                  
+
                                   #' Gets the UTC offset string from a numeric UTC offset hours value
                                   #'
                                   #' @param utcOffset A UTC offset in hours
@@ -358,59 +354,59 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                   getUtcOffsetText = function(utcOffset) {
                                     isNegative <- FALSE
                                     totalMinutes <- as.integer(utcOffset * 60)
-                                    
+
                                     if (totalMinutes < 0) {
                                       isNegative = TRUE
                                       totalMinutes = -totalMinutes
                                     }
-                                    
+
                                     hours = as.integer(totalMinutes / 60)
                                     minutes = as.integer(totalMinutes %% 60)
-                                    
+
                                     sprintf("%s%02d:%02d", if (isNegative) "-" else "+", hours, minutes)
                                   },
-                                  
+
                                   #' Gets the location data for a location
                                   getLocationData = function(locationIdentifier) {
                                     locationData <- fromJSON(content(stop_for_status(
                                       GET(paste0(publishUri, "/GetLocationData"), query = list(LocationIdentifier = locationIdentifier))
                                       , paste("get location data for", locationIdentifier)), "text"))
                                   },
-                                  
-                                  
+
+
                                   #' Gets field visits
-                                  #' 
+                                  #'
                                   #' Gets field visits activities
-                                  #' 
+                                  #'
                                   #' @param locationIdentifier Optional LocationIdentifier filter
                                   #' @param queryFrom Optional QueryFrom filter
                                   #' @param queryTo Optional QueryTo filter
                                   #' @param activityType Optional DiscreteMeasurementActivity filter
                                   #' @return The activities performed at the locations during the requested time range
-                                  #' @examples 
+                                  #' @examples
                                   getFieldVisits = function(locationIdentifier, queryFrom, queryTo, activityType) {
-                                    
+
                                     if (missing(locationIdentifier))  { locationIdentifier = NULL }
                                     if (missing(queryFrom))           { queryFrom = NULL }
                                     if (missing(queryTo))             { queryTo = NULL }
                                     if (missing(activityType))        { activityType = NULL }
-                                    
+
                                     # Coerce native R dates to an ISO 8601 string
                                     if (is.double(queryFrom)) { queryFrom <- .self$formatIso8601(queryFrom) }
                                     if (is.double(queryTo))   { queryTo   <- .self$formatIso8601(queryTo) }
-                                    
+
                                     # Build the field visit query
                                     q <- list(
                                       LocationIdentifier = locationIdentifier,
                                       QueryFrom = queryFrom,
                                       QueryTo = queryTo)
                                     q <- q[!sapply(q, is.null)]
-                                    
+
                                     # Get the filed visits descriptions for the time period
                                     visits <- fromJSON(content(stop_for_status(
                                       GET(paste0(.self$publishUri, "/GetFieldVisitDescriptionList"), query = q)
                                       , paste("get field visits for", locationIdentifier)), "text"))$FieldVisitDescriptions
-                                    
+
                                     # Get the activities performed during those visits
                                     visitDataRequests <- lapply(visits$Identifier, function(identifier) {
                                       r <- list(
@@ -418,16 +414,16 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                         DiscreteMeasurementActivity = activityType)
                                       r <- r[!sapply(r, is.null)]
                                     })
-                                    
+
                                     visitData <- .self$sendBatchRequests(.self$publishUri, "FieldVisitDataServiceRequest", "/GetFieldVisitData", visitDataRequests)
                                     visits$Details <- visitData
-                                    
+
                                     visits
                                   },
-                            
-                                  
+
+
                                   #' Fetch all requested time-series descriptions matching the filter
-                                  #' 
+                                  #'
                                   #' @param locationIdentifier Optional location identifier filter
                                   #' @param parameter Optional parameter filter
                                   #' @param publish Optional publish filter
@@ -436,14 +432,14 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                   #' @param extendedFilters Optional extended attribute filter
                                   #' @return All the time-series descriptions matching the filters
                                   getTimeSeriesDescriptions = function(locationIdentifier, parameter, publish, computationIdentifier, computationPeriodIdentifier, extendedFilters) {
-                                    
+
                                     if (missing(locationIdentifier))          { locationIdentifier = NULL }
                                     if (missing(parameter))                   { parameter = NULL }
                                     if (missing(publish))                     { publish = NULL }
                                     if (missing(computationIdentifier))       { computationIdentifier = NULL }
                                     if (missing(computationPeriodIdentifier)) { computationPeriodIdentifier = NULL }
                                     if (missing(extendedFilters))             { extendedFilters = NULL }
-                                    
+
                                     q <- list(
                                       LocationIdentifier = locationIdentifier,
                                       Parameter = parameter,
@@ -451,19 +447,19 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                       ComputationIdentifier = computationIdentifier,
                                       ExtendedFilters = .self$toJSV(extendedFilters))
                                     q <- q[!sapply(q, is.null)]
-                                    
+
                                     # Get all the time series at the location
                                     timeSeries <- fromJSON(content(stop_for_status(
                                       GET(paste0(timeseries$publishUri, "/GetTimeSeriesDescriptionList"), query = q)
                                       , paste("get time-series descriptions for", locationIdentifier)), "text"))$TimeSeriesDescriptions
                                   },
-                                  
+
                                   #' Gets time-series points for multiple time-series
-                                  #' 
+                                  #'
                                   #' Retrieves points for up to 10 time-series.
                                   #' Point values from secondary time-series will be time-aligned via interpolation
                                   #' rules to the timestamps from the first time-series.
-                                  #' 
+                                  #'
                                   #' @param timeSeriesIds A list of time-series identifiers or unique IDs
                                   #' @param queryFrom Optional time from which to retrieve data.If missing, fetches data from the start-of-record
                                   #' @param queryTo Optional time to which data willl be retrieved. If missing, fetches data to the end-of-record
@@ -487,23 +483,23 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                       # Throw on the brakes if the server is too old
                                       stop("Time aligned data is not available before AQTS 2017.2. Connected server version=", version)
                                     }
-                                    
+
                                     if (is.character(timeSeriesIds)) {
                                       # Coerce a single timeseries ID string into a vector
                                       timeSeriesIds <- c(timeSeriesIds)
                                     }
-                                    
+
                                     uniqueIds <- lapply(timeSeriesIds, .self$getTimeSeriesUniqueId)
-                                    
+
                                     if (missing(queryFrom))     { queryFrom <- NULL }
                                     if (missing(queryTo))       { queryTo <- NULL }
                                     if (missing(outputUnitIds)) { outputUnitIds <- NULL }
                                     if (missing(includeGapMarkers)) { includeGapMarkers <- NULL }
-                                    
+
                                     # Coerce native R dates to an ISO 8601 string
                                     if (is.double(queryFrom)) { queryFrom <- .self$formatIso8601(queryFrom) }
                                     if (is.double(queryTo))   { queryTo   <- .self$formatIso8601(queryTo) }
-                                    
+
                                     q <- list(
                                       TimeSeriesUniqueIds = .self$toJSV(uniqueIds),
                                       TimeSeriesOutputUnitIds = .self$toJSV(outputUnitIds),
@@ -511,31 +507,31 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                       QueryTo = queryTo,
                                       IncludeGapMarkers = includeGapMarkers)
                                     q <- q[!sapply(q, is.null)]
-                                    
+
                                     r <- GET(paste0(publishUri, "/GetTimeSeriesData"), query = q)
                                     stop_for_status(r, paste("get time-aligned data for", length(uniqueIds), "time-series"))
-                                    
+
                                     j <- fromJSON(content(r, "text"))
                                   },
-                                  
+
                                   #' Get corrected data for a time-series
                                   #'
                                   #' The getTimeSeriesData() method is usually a better choice, since it can pull corrected data from multiple time-series.
                                   #' But when you need to look at the metadata of a time-series, this method is required.
-                                  #' 
+                                  #'
                                   #' @param timeSeriesIdentifier
                                   #' @return The corrected data and metadata for the time-series
                                   getTimeSeriesCorrectedData = function (timeSeriesIdentifier, queryFrom, queryTo, getParts, includeGapMarkers) {
-                                    
+
                                     if (missing(queryFrom))         { queryFrom <- NULL }
                                     if (missing(queryTo))           { queryTo <- NULL }
                                     if (missing(getParts))          { getParts <- NULL }
                                     if (missing(includeGapMarkers)) { includeGapMarkers <- NULL }
-                                    
+
                                     # Coerce native R dates to an ISO 8601 string
                                     if (is.double(queryFrom)) { queryFrom <- .self$formatIso8601(queryFrom) }
                                     if (is.double(queryTo))   { queryTo   <- .self$formatIso8601(queryTo) }
-                                    
+
                                     # Build the query
                                     if (isLegacy) {
                                       q <- list(
@@ -553,16 +549,16 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                         IncludeGapMarkers = includeGapMarkers)
                                     }
                                     q <- q[!sapply(q, is.null)]
-                                    
+
                                     data <- fromJSON(content(stop_for_status(
                                       GET(paste0(.self$publishUri, "/GetTimeSeriesCorrectedData"), query = q)
                                       , paste("get corrected data for", timeSeriesIdentifier)), "text"))
-                                    
+
                                   }
-                                  
-                               
-                                
-                                  
+
+
+
+
                                 )
 )
 
