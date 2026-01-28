@@ -1,0 +1,244 @@
+---
+title: "Retrieve multiple parameters and stations"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Retrieve multiple parameters and stations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+This vignette describes a general workflow for querying and viewing multi-parameter and multi-station data from the Aquarius database using the `deltawqAQ` package. Steps include identifying the appropriate location and parameter codes using the `aq_all_locations` dataset and the `aq_get_station_parameters` function, then querying timeseries using the `aq_get_ts_multi_param` and `aq_get_ts_multi_station` functions. Code for making basic plot and writing the data are also included. 
+```{r setup}
+library(deltawqAQ)
+library(ggplot2)
+library(lubridate)
+library(dplyr)
+library(knitr)
+```
+
+
+## Select Station
+
+To work with Aquarius data, start by figuring out the location code(s) of interest. Functions will take `cdec_code`, `location_id`, or `aquarius_id`, with most users tending to be most familiar with `cdec_code`. The `aq_all_locations` data object gets generated in the package, and locations should be stable once all locations become telemetered.
+
+```{r}
+kable(head(deltawqAQ::aq_all_locations))
+```
+
+## Multiple parameters for one station
+Once you have picked your station, take a look at the parameters you would like to query. We have selected `SJW` for this example. You will need `parameter_name` for your timeseries query.
+
+```{r}
+station = "SJW"
+```
+
+### Select parameter names
+Now use `aq_get_station_parameters` to figure out the parameter names for your station.
+
+```{r, echo = FALSE}
+kable(head(aq_get_station_parameters(cdec_code = station), n = 15))
+```
+
+### Query data 
+Now you can use the `aq_get_ts_multi_param` function to run your query for your station and parameters of interest. You can enter a datetime or a date for the `query_from` and `query_to` fields. 
+
+#### Select parameters and dates
+```{r}
+params = c("Turbidity, Form Neph", "Water Temp", "Sp Cond", "CHL RFU", "pH")
+start_date = "2025-12-01"
+end_date = lubridate::today()
+```
+
+#### Query and look at data
+```{r}
+multi_param_ts <- aq_get_ts_multi_param(
+  cdec_code = station, 
+  parameter = params, 
+  query_from = start_date, 
+  query_to = end_date
+  )
+
+print(paste("Parameters with data:", paste(unique(multi_param_ts$parameter_name), collapse = ", ")))
+```
+
+```{r, echo = FALSE}
+kable(head(multi_param_ts))
+```
+
+
+### Summarize by daily values
+You may want to condense the data by getting daily averages.
+
+```{r}
+multi_param_daily <- multi_param_ts %>%
+  mutate(date = lubridate::date(datetime)) %>%
+  group_by(date, cdec_code, location_id, parameter_name) %>%
+  summarize(daily_avg = mean(value)) %>%
+  ungroup()
+```
+
+```{r, echo = FALSE}
+kable(head(multi_param_daily))
+```
+
+
+### Visualize time series for each parameter
+
+If you'd like to visualize your data, here are some examples of plots you can make with your data. 
+
+#### Daily Averages
+
+```{r fig.height = 7, fig.width = 6}
+ggplot(multi_param_daily) +
+  geom_point(aes(x=date, y=daily_avg, color = parameter_name)) +
+  geom_line(aes(x=date, y=daily_avg, color = parameter_name)) +
+  facet_wrap(~parameter_name, nrow = nrow(multi_param_daily), scales = "free_y") +
+  labs(x = "Date", y = "Daily Average Value", title = paste("Water Quality for", station))+
+  theme_bw() +
+  theme(strip.text = element_text(size = 12),
+        axis.title = element_text(size = 12),
+        legend.position = "none",
+        plot.title = element_text(hjust = 0.5),
+        axis.text = element_text(size = 11))
+```
+
+#### 15 minute data
+
+```{r, fig.height = 7, fig.width = 6}
+ggplot(multi_param_ts) +
+  geom_line(aes(datetime, value, color = parameter_name)) +
+  facet_wrap(~parameter_name, nrow = nrow(multi_param_ts), scales = "free_y") +
+  labs(x = "Datetime", y = "Value", title = paste("Water Quality for", station))+
+  theme_bw() +
+  theme(strip.text = element_text(size = 12),
+        axis.title = element_text(size = 12),
+        legend.position = "none",
+        plot.title = element_text(hjust = 0.5),
+        axis.text = element_text(size = 11))
+```
+
+### Write data
+
+You can then write data to your local drive. Specify the filepath of interest and customize the filename if desired. This example writes the averaged data. 
+
+```{r}
+param_label <- paste(unique(multi_param_ts$parameter_name), collapse = "-")
+
+write.csv(multi_param_daily, 
+          here::here(paste0("ts_", station, "_",param_label,"_",  start_date, "-", end_date)))
+```
+
+## Multiple stations for one parameter
+
+Once you have picked your stations, take a look at the parameter you would like to query. We have selected several stations for this example. You will need `parameter_name` for your timeseries query.
+
+```{r}
+stations <- c("GSS", "SMR", "OSJ", "HOL", "OBI", "OH4", "MDM")
+```
+
+### Select parameter names
+
+Now use `aq_get_station_parameters` to figure out the parameter names for your station.
+
+```{r, echo = FALSE}
+kable(head(aq_get_station_parameters(cdec_code = stations), n = 15))
+```
+
+### Query data 
+Now you can use the `aq_get_ts_multi_station` function to run your query for your parameter and stations of interest. You can enter a datetime or a date for the `query_from` and `query_to` fields. 
+
+#### Select query parameter and dates
+```{r}
+param = "Turbidity, Form Neph"
+startdate = "2025-12-01"
+enddate = lubridate::today()
+```
+
+#### Query and look at data
+```{r}
+multi_station_ts <- aq_get_ts_multi_station(cdec_code = stations, 
+                                         parameter = param, 
+                                         query_from = startdate, 
+                                         query_to = enddate)
+
+print(paste("Stations with data:", paste(unique(multi_station_ts$cdec_code), collapse = ", ")))
+```
+
+```{r, echo = FALSE}
+kable(head(multi_station_ts))
+```
+
+### Summarize by daily values
+You may want to condense the data by getting daily averages.
+
+```{r}
+multi_station_daily <- multi_station_ts |> 
+  mutate(date = lubridate::date(datetime)) |> 
+  group_by(date, cdec_code, location_id, parameter_name) |> 
+  summarize(daily_avg = mean(value)) |> 
+  ungroup()
+```
+
+```{r, echo = FALSE}
+kable(head(multi_station_daily))
+```
+
+
+### Visualize time series for each station
+
+If you'd like to visualize your data, here are some examples of plots you can make with your data. 
+
+#### Daily Averages
+
+```{r, fig.height = 7, fig.width = 6}
+ggplot(multi_station_daily) +
+  geom_point(aes(x=date, y=daily_avg, color = cdec_code)) +
+  geom_line(aes(x=date, y=daily_avg, color = cdec_code)) +
+  facet_wrap(~cdec_code, nrow = nrow(multi_station_daily), scales = "free_y") +
+  labs(x = "Date", y = "Daily Average Value", title = paste("Water Quality for", param))+
+  theme_bw() +
+  theme(strip.text = element_text(size = 12),
+        axis.title = element_text(size = 12),
+        legend.position = "none",
+        plot.title = element_text(hjust = 0.5),
+        axis.text = element_text(size = 11))
+```
+
+#### 15 minute data
+
+Include a threshold line if useful.
+
+```{r, fig.height = 7, fig.width = 6}
+ggplot(multi_station_ts) +
+  geom_line(aes(datetime, value, color = cdec_code)) +
+  geom_hline(yintercept = 12, linetype = "dashed") + 
+  facet_wrap(~cdec_code, nrow = nrow(multi_station_ts), scales = "free_y") +
+  labs(x = "Datetime", y = param, color = "station")+
+  theme_bw() +
+  theme(strip.text = element_text(size = 12),
+        axis.title = element_text(size = 12),
+        legend.position = "none",
+        axis.text = element_text(size = 11))
+```
+
+### Write data
+
+You can then write data to your local drive. Specify the filepath of interest and customize the filename if desired. 
+
+```{r}
+sta_label <- paste(unique(multi_station_ts$cdec_code), collapse = "-")
+write.csv(multi_station_daily, 
+          here::here(paste0("ts_", param, "_",sta_label,"_",  start_date, "-", end_date)))
+```
+
+## Combine parameter and station
+

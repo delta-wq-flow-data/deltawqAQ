@@ -1,0 +1,94 @@
+---
+title: "Timeseries workflow"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Timeseries workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Introduction
+
+This vignette describes a general workflow for querying and viewing data from the Aquarius database using the `deltawqAQ` package. Steps include identifying the appropriate location and parameter codes using the `aq_all_locations` dataset and the `aq_get_station_parameters` function, then querying a timeseries using the `aq_get_ts` function, and making a basic plot. For working with multiple parameters or stations, see the `retrieve_multi_ts` vignette. 
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Start by loading packages. 
+
+```{r setup}
+library(deltawqAQ)
+library(ggplot2)
+library(lubridate)
+library(dplyr)
+library(knitr)
+```
+
+## Locations
+
+To work with Aquarius data, start by figuring out the location code(s) of interest. Functions will take `cdec_code`, `location_id`, or `aquarius_id`, with most users tending to be most familiar with `cdec_code`. The `aq_all_locations` data object gets generated in the package, and locations should be stable once all locations become telemetered.
+
+```{r, echo = FALSE}
+kable(head(deltawqAQ::aq_all_locations))
+```
+
+## Parameters
+Once you have picked your station, take a look at the parameters you would like to query. We have selected `SJW` for this example. You will need `parameter_name` for your timeseries query.
+
+```{r}
+param_list <- aq_get_station_parameters(cdec_code = "SJW")
+```
+
+```{r echo = FALSE}
+kable(head(param_list, n = 15))
+```
+
+## Querying
+
+Now you can run your query for your station and parameter of interest. You can enter a datetime or a date for the `query_from` and `query_to` fields. 
+
+```{r}
+ts <- aq_get_ts(cdec_code = "SJW", 
+                parameter = "Water Temp", 
+                query_from = "2025-12-01 00:00:00", 
+                query_to = "2026-02-01 00:00:00")
+```
+
+```{r, echo = FALSE}
+kable(head(ts))
+```
+
+## Modify data
+
+You may want to condense the data by getting daily averages. 
+
+```{r}
+ts_daily <- ts |> 
+  mutate(date = lubridate::date(datetime)) |>
+  group_by(date, cdec_code) |>
+  summarize(wt_daily = mean(value)) |>
+  ungroup()
+```
+
+```{r, echo = FALSE}
+kable(head(ts_daily))
+```
+
+## View data
+Now you can make a simple plot for daily average values for the timeseries.
+
+```{r, fig.height = 4, fig.width = 6}
+ggplot(ts_daily) + 
+  geom_point(aes(x = date, y = wt_daily)) +
+  geom_line(aes(x = date, y = wt_daily)) +
+  labs(x = "Date", y = "Water Temp (°C)", title = ts_daily$aq_location_name[1] ) +
+  theme_bw()+
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 11))
+```
+
+
