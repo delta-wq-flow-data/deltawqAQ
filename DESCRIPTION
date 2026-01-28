@@ -9,7 +9,7 @@ Authors@R: c(
 Description: Access and download water quality data from USBR Water Quality Monitoring. 
     Functions connect to Aquarius database, allowing exploration of station metadata and parameters,
     as well as download of data for selected station(s). 
-License: What license is it under?
+License: CC BY 4.0
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/delta-wq-flow-data/deltawqAQ
@@ -29,3 +29,5 @@ Suggests:
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
 Config/testthat/edition: 3
+Depends: 
+    R (>= 3.5)
