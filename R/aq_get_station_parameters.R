@@ -15,8 +15,7 @@
 #' \dontrun{
 #' params_SJW <- aq_get_station_parameters(cdec_code = "SJW")
 #' params_SJW_MDM_GES <- aq_get_station_parameters(cdec_code = c("SJW", "MDM", "GES"))
-#' param_info <- aq_get_station_parameters(location_id = c("11447903", "11447905", "11447890")
-#' )
+#' param_info <- aq_get_station_parameters(location_id = c("11447903", "11447905", "11447890"))
 #' }
 #'
 #' @export
@@ -30,11 +29,8 @@ aq_get_station_parameters = function(cdec_code=NULL, location_id=NULL, aq_locati
     on.exit(aq_disconnect())
   }
 
-  # Get station info for all locations
-  data <- aq_get_location_list(connect = FALSE)
-
   # Looks for either cdec code, location_id, or aq_location_id within all stations
-  data_filtered <- data
+  data_filtered <- deltawqAQ::aq_all_locations
 
   if (!is.null(cdec_code)) {
     data_filtered <- data_filtered|> dplyr::filter(cdec_code %in% .env$cdec_code)
@@ -84,6 +80,8 @@ aq_get_station_parameters = function(cdec_code=NULL, location_id=NULL, aq_locati
   # Join with location metadata and select columns
   df <- json_ts_params_df |>
     dplyr::left_join(data_filtered, by = "aq_location_id") |>
+    # implement the next row once we have all working timeseries set up
+    # dplyr::filter(grepl(".working", label, fixed = TRUE)) |>
     dplyr::select(cdec_code, location_id, aq_station_name, aq_location_id, parameter_id, parameter_name, unit, label, updated_at)
 
   # Return df

@@ -19,11 +19,8 @@
 #' @export
 aq_get_location_metadata = function(cdec_code = NULL, location_id = NULL, aq_location_id = NULL) {
 
-  # run all locations metadata and get list of all stations
-  data <- aq_get_location_list()
-
   # Looks for either cdec code, location_id, or aq_location_id within all stations
-  data_filtered <- data
+  data_filtered <- deltawqAQ::aq_all_locations
 
   if (!is.null(cdec_code)) {
     data_filtered <- data_filtered |> dplyr::filter(cdec_code %in% .env$cdec_code)
@@ -79,8 +76,6 @@ aq_get_location_list  <- function(connect = TRUE) {
     cli::cli_alert_warning("No data found.")
     cli::cli_abort("No data retrieved.")
   }
-
-  cli::cli_alert_success("Retrieved {length(json_locations$Name)} locations")
 
   # Create data frame for useful location information
   df <- data.frame(
