@@ -27,14 +27,9 @@ aq_get_ts_multi_param(
 \item{query_from}{Start datetime for query}
 
 \item{query_to}{End datetime for query}
-
-\item{write}{Logical indicating whether to write the output timeseries}
-
-\item{output}{Folder path for output timeseries if `write` is TRUE}
 }
 \value{
 A data frame of the combined time series for all parameters
-If `write` is TRUE, individual files will be written for each parameter.
 }
 \description{
 `aq_get_ts_multi_param` retrieves and optionally downloads timeseries for multiple parameters at one location
@@ -43,7 +38,6 @@ If `write` is TRUE, individual files will be written for each parameter.
 This function retrieves timeseries data for multiple parameters and a single location.
 A single value for either `cdec_code`, `location_id`, or `aq_location_id` should be provided and identified by the location identifier type.
 A list of parameters should be provided.
-The downloaded file can then be saved in your chosen filepath.
 }
 \examples{
 \dontrun{
@@ -56,9 +50,7 @@ multi_param_ts <- aq_get_ts_multi_param(
   location_id = "11447903",
   parameter = c("Sp Cond", "Water Temp", "CHL RFU"),
   query_from = "2025-12-01T00:00:00Z",
-  query_to = lubridate::now(),
-  write = TRUE,
-  output = here::here()
+  query_to = lubridate::now()
   )
 }
 

@@ -10,9 +10,7 @@ aq_get_ts(
   aq_location_id = NULL,
   parameter,
   query_from,
-  query_to,
-  write = FALSE,
-  output = NULL
+  query_to
 )
 }
 \arguments{
@@ -27,10 +25,6 @@ aq_get_ts(
 \item{query_from}{Start datetime for query}
 
 \item{query_to}{End datetime for query}
-
-\item{write}{Logical; whether to write the output timeseries}
-
-\item{output}{Folder path for output timeseries if `write` is `TRUE`.}
 }
 \value{
 A data frame containing the time series values and associated metadata.
@@ -41,7 +35,6 @@ A data frame containing the time series values and associated metadata.
 \details{
 This function retrieves timeseries data for a single location and a single parameter.
 Exactly one value of either `cdec_code`, `location_id`, or `aq_location_id` should be provided and identified by the location identifier type.
-The downloaded file can then be saved in your chosen filepath.
 }
 \examples{
 \dontrun{
@@ -54,9 +47,7 @@ ts_data <- aq_get_ts(
  location_id = "11447903",
  parameter = "Sp Cond",
  query_from = "2025-12-01T00:00:00Z",
- query_to = lubridate::now(),
- write = TRUE,
- output = here::here()
+ query_to = lubridate::now()
  )
  }
 

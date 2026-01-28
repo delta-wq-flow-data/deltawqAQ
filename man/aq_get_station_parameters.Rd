@@ -34,8 +34,7 @@ Retrieves the parameters (IDs, names) and specific timeseries identifiers associ
 \dontrun{
 params_SJW <- aq_get_station_parameters(cdec_code = "SJW")
 params_SJW_MDM_GES <- aq_get_station_parameters(cdec_code = c("SJW", "MDM", "GES"))
-param_info <- aq_get_station_parameters(location_id = c("11447903", "11447905", "11447890")
-)
+param_info <- aq_get_station_parameters(location_id = c("11447903", "11447905", "11447890"))
 }
 
 }
