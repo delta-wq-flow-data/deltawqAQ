@@ -4,17 +4,15 @@
 #'
 #' @details This function retrieves timeseries data for a single location and a single parameter.
 #' Exactly one value of either `cdec_code`, `location_id`, or `aq_location_id` should be provided and identified by the location identifier type.
-#' The downloaded file can then be saved in your chosen filepath.
 #' @param cdec_code Three-letter location code matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying
 #' @param location_id Numeric identifier for location; one option for querying
 #' @param aq_location_id Location identifier as displayed in Aquarius database; one option for querying
 #' @param parameter Parameter name
 #' @param query_from Start datetime for query
 #' @param query_to End datetime for query
-#' @param write Logical; whether to write the output timeseries
-#' @param output Folder path for output timeseries if `write` is `TRUE`.
-#'
+
 #' @return A data frame containing the time series values and associated metadata.
+#'
 #' @examples
 #' \dontrun{
 #'ts_data <- aq_get_ts(
@@ -26,17 +24,14 @@
 #'  location_id = "11447903",
 #'  parameter = "Sp Cond",
 #'  query_from = "2025-12-01T00:00:00Z",
-#'  query_to = lubridate::now(),
-#'  write = TRUE,
-#'  output = here::here()
+#'  query_to = lubridate::now()
 #'  )
 #'  }
 #'
 #' @export
 
 aq_get_ts <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NULL,
-                      parameter, query_from, query_to,
-                      write = FALSE, output = NULL) {
+                      parameter, query_from, query_to) {
 
   # Connect once at the start
   aq_connect(server_hostname = Sys.getenv("AQTS_SERVER"),
@@ -45,15 +40,11 @@ aq_get_ts <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NUL
 
   on.exit(aq_disconnect())
 
-  # Get station info for all locations
-  data <- aq_get_location_list(connect = FALSE)
-
   # Looks for either cdec code, location_id, or aq_location_id within all stations
-  # Looks for either cdec code, location_id, or aq_location_id within all stations
-  data_filtered <- data
+  data_filtered <- deltawqAQ::aq_all_locations
 
   if (!is.null(cdec_code)) {
-    data_filtered <- data_filtered |>  dplyr::filter(cdec_code %in% .env$cdec_code)
+    data_filtered <- data_filtered |> dplyr::filter(cdec_code %in% .env$cdec_code)
   }
   if (!is.null(location_id)) {
     data_filtered <- data_filtered |> dplyr::filter(location_id %in% .env$location_id)
@@ -90,24 +81,6 @@ aq_get_ts <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NUL
                   unit,
                   approval)
 
-  # Write to CSV if requested
-  if (isTRUE(write)) {
-    output_file <- if (!is.null(output)) {
-      here::here(output, paste0(station_code, "_", parameter, "_data.csv"))
-    } else {
-      here::here(paste0(station_code, "_", parameter, "_data.csv"))
-    }
-
-    tryCatch({
-      write.csv(ts_data, output_file, row.names = FALSE)
-      cli::cli_alert_success("Data written to: {output_file}")
-    }, error = function(e) {
-      cli::cli_alert_danger("Failed to write file: {e$message}")
-    })
-    return(invisible(ts_data))
-  }
-
-  # Return normally if not writing
   return(ts_data)
 }
 
@@ -199,7 +172,6 @@ aq_process_ts = function(station_code, parameter, query_from, query_to) {
 #'
 #' @details This function retrieves timeseries data for multiple locations and a single parameter.
 #' A list of values for either `cdec_code`, `location_id`, or `aq_location_id` should be provided and identified by the location identifier type.
-#' The downloaded file can then be saved in your chosen filepath.
 #'
 #' @param cdec_code List of three-letter location codes matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying
 #' @param location_id List of numeric identifiers for location; one option for querying
@@ -207,26 +179,21 @@ aq_process_ts = function(station_code, parameter, query_from, query_to) {
 #' @param parameter Parameter name
 #' @param query_from Start datetime for query
 #' @param query_to End datetime for query
-#' @param write Logical indicating whether to write the output timeseries
-#' @param output Folder path for output timeseries if `write` is TRUE
 #'
 #' @return A data frame of the combined time series for all stations
-#' If `write` is TRUE, individual files will be written for each station.
 #'
 #' @examples
 #' \dontrun{
 #' multi_sta_ts <- aq_get_ts_multi_station(
 #'   cdec_code = c("SJW", "MDM", "GSS"),
 #'   parameter = "Turbidity, Form Neph",
-#'   query_from = "2025-12-01T00:00:00Z",
-#'   query_to = "2026-01-01T00:00:00Z")
+#'   query_from = "2025-12-01 00:00:00",
+#'   query_to = "2026-01-01 00:00:00")
 #' multi_sta_ts <- aq_get_ts_multi_station(
 #'   location_id = c("11447903", "11447905", "11447890"),
 #'   parameter = "Sp Cond",
-#'   query_from = "2025-12-01T00:00:00Z",
-#'   query_to = lubridate::now(),
-#'   write = TRUE,
-#'   output = here::here()
+#'   query_from = "2025-12-01 00:00:00",
+#'   query_to = lubridate::now()
 #'   )
 #'   }
 #'
@@ -242,11 +209,8 @@ aq_get_ts_multi_station <- function(cdec_code = NULL, location_id = NULL, aq_loc
 
   on.exit(aq_disconnect())
 
-  # Get station info for all locations
-  data <- aq_get_location_list(connect = FALSE)
-
   # Looks for either cdec code, location_id, or aq_location_id within all stations
-  data_filtered <- data
+  data_filtered <- deltawqAQ::aq_all_locations
 
   if (!is.null(cdec_code)) {
     data_filtered <- data_filtered |> dplyr::filter(cdec_code %in% .env$cdec_code)
@@ -295,27 +259,7 @@ aq_get_ts_multi_station <- function(cdec_code = NULL, location_id = NULL, aq_loc
                       unit,
                       approval)
 
-      # Write individual files if requested
-      if (isTRUE(write)) {
-        # Get station identifier for filename
-        station_name <- data_filtered |>
-          dplyr::filter(aq_location_id == station) |>
-          dplyr::pull(cdec_code)
-
-        output_file <- if (!is.null(output)) {
-          here::here(output, paste0(station_name, "_", parameter, "_data.csv"))
-        } else {
-          here::here(paste0(station_name, "_", parameter, "_data.csv"))
-        }
-
-        tryCatch({
-          write.csv(ts_data, output_file, row.names = FALSE)
-          cli::cli_alert_success("Data written to: {output_file}")
-        }, error = function(e) {
-          cli::cli_alert_danger("Failed to write file: {e$message}")
-        })
-      }
-
+      # Track which stations successful
       successful_stations <<- c(successful_stations, station)
       return(ts_data)
 
@@ -334,12 +278,9 @@ aq_get_ts_multi_station <- function(cdec_code = NULL, location_id = NULL, aq_loc
   }
 
   # Return data
-  if (isTRUE(write)) {
-    return(invisible(all_ts_data))
-  } else {
-    return(all_ts_data)
-  }
+  return(all_ts_data)
 }
+
 
 #' @title Get Aquarius Timeseries for Multiple Parameters
 #'
@@ -348,7 +289,6 @@ aq_get_ts_multi_station <- function(cdec_code = NULL, location_id = NULL, aq_loc
 #' @details This function retrieves timeseries data for multiple parameters and a single location.
 #' A single value for either `cdec_code`, `location_id`, or `aq_location_id` should be provided and identified by the location identifier type.
 #' A list of parameters should be provided.
-#' The downloaded file can then be saved in your chosen filepath.
 #'
 #' @param cdec_code Three-letter location code matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying
 #' @param location_id Numeric identifier for location; one option for querying
@@ -356,11 +296,8 @@ aq_get_ts_multi_station <- function(cdec_code = NULL, location_id = NULL, aq_loc
 #' @param parameter List of parameter names
 #' @param query_from Start datetime for query
 #' @param query_to End datetime for query
-#' @param write Logical indicating whether to write the output timeseries
-#' @param output Folder path for output timeseries if `write` is TRUE
 #'
 #' @return A data frame of the combined time series for all parameters
-#' If `write` is TRUE, individual files will be written for each parameter.
 #'
 #' @examples
 #' \dontrun{
@@ -373,9 +310,7 @@ aq_get_ts_multi_station <- function(cdec_code = NULL, location_id = NULL, aq_loc
 #'   location_id = "11447903",
 #'   parameter = c("Sp Cond", "Water Temp", "CHL RFU"),
 #'   query_from = "2025-12-01T00:00:00Z",
-#'   query_to = lubridate::now(),
-#'   write = TRUE,
-#'   output = here::here()
+#'   query_to = lubridate::now()
 #'   )
 #' }
 #'
@@ -448,24 +383,7 @@ aq_get_ts_multi_param <- function(cdec_code = NULL, location_id = NULL, aq_locat
                       unit,
                       approval)
 
-      # Write individual files if requested
-      if (isTRUE(write)) {
-        station_name <- data_filtered$cdec_code[1]
-
-        output_file <- if (!is.null(output)) {
-          here::here(output, paste0(station_name, "_", param, "_data.csv"))
-        } else {
-          here::here(paste0(station_name, "_", param, "_data.csv"))
-        }
-
-        tryCatch({
-          write.csv(ts_data, output_file, row.names = FALSE)
-          cli::cli_alert_success("Data written to: {output_file}")
-        }, error = function(e) {
-          cli::cli_alert_danger("Failed to write file: {e$message}")
-        })
-      }
-
+      # Track which parameters successful
       successful_params <<- c(successful_params, param)
       return(ts_data)
 
@@ -484,11 +402,8 @@ aq_get_ts_multi_param <- function(cdec_code = NULL, location_id = NULL, aq_locat
   }
 
   # Return data
-  if (isTRUE(write)) {
-    return(invisible(all_ts_data))
-  } else {
     return(all_ts_data)
-  }
+
 
 
 }
