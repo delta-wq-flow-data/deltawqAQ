@@ -4,7 +4,7 @@
 .aq_env <- new.env(parent = emptyenv())
 
 #' @title Connect to Aquarius
-#' @description `aq_connect` establishes and stores a connection to the Aquarius database.
+#' @description aq_connect establishes and stores a connection to the Aquarius database.
 #' @details This function creates a connection that can be reused across
 #' function calls. The connection is stored in a package environment and
 #' remains active until explicitly disconnected or the R session ends.
@@ -13,7 +13,7 @@
 #' @param username Username for database. If NULL, uses AQ_USERNAME from environment variables.
 #' @param password Password for database. If NULL, uses AQ_PASSWORD from environment variables.
 #' @param timeout_seconds Number of seconds before connection times out (default: 30)
-#' @param force_reconnect Logical. If `TRUE`, forces a new connection even if one exists (default: FALSE)
+#' @param force_reconnect Logical. If TRUE, forces a new connection even if one exists (default: FALSE)
 #'
 #' @return Invisible NULL (connection stored in package environment)
 #' @export
@@ -37,7 +37,7 @@ aq_connect <- function(server_hostname = NULL,
   # Check if connection already exists
   if (!force_reconnect && aq_is_connected()) {
     cli::cli_alert_info("Already connected to AQUARIUS server")
-    cli::cli_alert_success("Server version: {.aq_env$version}")
+    cli::cli_alert_success("Server version: {(.aq_env$version)}")
     return(invisible(NULL))
   }
 
@@ -91,9 +91,9 @@ aq_connect <- function(server_hostname = NULL,
 }
 
 #' @title Disconnect from Aquarius database
-#' @description `aq_disconnect` disconnects from the Aquarius database and clears stored connection.
+#' @description aq_disconnect disconnects from the Aquarius database and clears stored connection.
 #' @details This function closes the active connection and clears the connection state
-#' from the package environment. After disconnecting, you'll need to call `aq_connect()`
+#' from the package environment. After disconnecting, you'll need to call aq_connect()
 #' again before using other package functions.
 #'
 #' @return Invisible NULL
@@ -136,7 +136,7 @@ aq_disconnect <- function() {
 }
 
 #' @title Check if connected to Aquarius
-#' @description `aq_is_connected` checks whether there is an active Aquarius connection.
+#' @description aq_is_connected checks whether there is an active Aquarius connection.
 #' @details This function returns TRUE if a connection has been established and not
 #' yet disconnected. Note that this checks the stored state and does not verify
 #' the connection is still active on the server side.

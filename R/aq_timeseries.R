@@ -1,15 +1,15 @@
-#' @title Get Aquarius Timeseries
+#' @title Get Aquarius Time series
 #'
-#' @description `aq_get_ts` retrieves time series data from an Aquarius database and optionally downloads and writes the timeseries.
+#' @description Retrieves time series data from an Aquarius database and optionally downloads and writes the time series.
 #'
-#' @details This function retrieves timeseries data for a single location and a single parameter.
+#' @details Retrieves time series data for a single location and a single parameter.
 #' Exactly one value of either `cdec_code`, `location_id`, or `aq_location_id` should be provided and identified by the location identifier type.
 #' @param cdec_code Three-letter location code matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying
 #' @param location_id Numeric identifier for location; one option for querying
 #' @param aq_location_id Location identifier as displayed in Aquarius database; one option for querying
 #' @param parameter Parameter name
-#' @param query_from Start datetime for query
-#' @param query_to End datetime for query
+#' @param query_from Start datetime for query; also accepts date
+#' @param query_to End datetime for query; also accepts date
 
 #' @return A data frame containing the time series values and associated metadata.
 #'
@@ -18,12 +18,12 @@
 #'ts_data <- aq_get_ts(
 #'  cdec_code = "SJW",
 #'  parameter = "Water Temp",
-#'  query_from = "2025-12-01T00:00:00Z",
-#'  query_to = "2026-01-01T00:00:00Z")
+#'  query_from = "2025-12-01 00:00:00",
+#'  query_to = "2026-01-01 00:00:00")
 #'ts_data <- aq_get_ts(
 #'  location_id = "11447903",
 #'  parameter = "Sp Cond",
-#'  query_from = "2025-12-01T00:00:00Z",
+#'  query_from = "2025-12-01 00:00:00",
 #'  query_to = lubridate::now()
 #'  )
 #'  }
@@ -36,41 +36,40 @@ aq_get_ts <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NUL
   # Check connection
   aq_ensure_connection()
 
-  # Looks for either cdec code, location_id, or aq_location_id within all stations
-  data_filtered <- deltawqAQ::aq_all_locations
+  # Looks for either cdec code, location_id, or aq_location_id within all locations
 
   if (!is.null(cdec_code)) {
-    data_filtered <- data_filtered |> dplyr::filter(cdec_code %in% .env$cdec_code)
+    data_filtered <- deltawqAQ::aq_all_locations |> dplyr::filter(cdec_code %in% .env$cdec_code)
   }
   if (!is.null(location_id)) {
-    data_filtered <- data_filtered |> dplyr::filter(location_id %in% .env$location_id)
+    data_filtered <- deltawqAQ::aq_all_locations |> dplyr::filter(location_id %in% .env$location_id)
   }
   if (!is.null(aq_location_id)) {
-    data_filtered <- data_filtered |> dplyr::filter(aq_location_id %in% .env$aq_location_id)
+    data_filtered <- deltawqAQ::aq_all_locations |> dplyr::filter(aq_location_id %in% .env$aq_location_id)
   }
 
   # Right after data_filtered
-  cli::cli_alert_info("After filtering: {nrow(data_filtered)} station{?s}")
-  cli::cli_alert_info("Station codes: {paste(data_filtered$aq_location_id, collapse = ', ')}")
+  cli::cli_alert_info("After filtering: {nrow(data_filtered)} location{?s}")
+  cli::cli_alert_info("Location codes: {paste(data_filtered$aq_location_id, collapse = ', ')}")
 
-  # Check if any stations were found
+  # Check if any locations were found
   if (nrow(data_filtered) == 0) {
-    cli::cli_alert_warning("No stations matched the specified criteria")
+    cli::cli_alert_warning("No locations matched the specified criteria")
     return(NULL)
   }
 
-  # Get identifier for the filtered station (should be just one now)
-  station_code <- data_filtered$aq_location_id
+  # Get identifier for the filtered location (should be just one now)
+  location_code <- data_filtered$aq_location_id
 
   # Function to obtain time series data
-  df <- aq_process_ts(station_code, parameter, query_from, query_to)
+  df <- aq_process_ts(location_code, parameter, query_from, query_to)
 
   ts_data <- df |>
     dplyr::left_join(data_filtered, by = "aq_location_id") |>
     dplyr::select(datetime,
                   cdec_code,
                   location_id,
-                  aq_station_name,
+                  aq_location_name,
                   aq_location_id,
                   parameter_name,
                   value,
@@ -80,37 +79,37 @@ aq_get_ts <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NUL
   return(ts_data)
 }
 
-#' @title Process Aquarius Timeseries
+#' @title Process Aquarius Time series
 #'
-#' @description `aq_process_ts` Processes the timeseries into a clean data frame after Aquarius database retrieval.
+#' @description Processes the time series into a clean data frame after Aquarius database retrieval.
 #'
-#' @details This function cleans up the JSON format data obtained by the Aquarius API request.
-#' The function is called in the `get_ts` functions as an intermediate step.
+#' @details Cleans up the JSON format data obtained by the Aquarius API request.
+#' The function is called in the get_ts functions as an intermediate step.
 #'
-#' @param station_code Aquarius station/location code of interest
+#' @param location_code Aquarius location/location code of interest
 #' @param parameter Parameter name from Aquarius
-#' @param query_from Start datetime for query
-#' @param query_to End datetime for query
+#' @param query_from Start datetime for query; also accepts date
+#' @param query_to End datetime for query; also accepts date
 #'
-#' @return A data frame with 7 columns that will be further modified in `get_ts` functions
-aq_process_ts = function(station_code, parameter, query_from, query_to) {
+#' @return A data frame with 7 columns that will be further modified in get_ts functions
+aq_process_ts = function(location_code, parameter, query_from, query_to) {
 
-  filtered_params <- aq_get_station_parameters(aq_location_id = station_code)
+  filtered_params <- aq_get_location_parameters(aq_location_id = location_code)
 
   # Filter to the specific parameter requested
   param_info <- filtered_params |>
     dplyr::filter(parameter_name == parameter)
 
   if (nrow(param_info) == 0) {
-    cli::cli_abort("Parameter '{parameter}' not found for station {station_code}")
+    cli::cli_abort("Parameter '{parameter}' not found for location {location_code}")
   }
 
   # Use the first label if multiple exist
   label <- param_info$label[1]
 
-  # Get the timeseries ID
+  # Get the time series ID
   # AQUARIUS uses the format: Parameter.Label@LocationIdentifier
-  timeseries_id <- paste0(parameter, ".", label, "@", station_code)
+  timeseries_id <- paste0(parameter, ".", label, "@", location_code)
   cli::cli_alert_info(c(
     "Requesting time-series: {timeseries_id} ",
     "Time range: {query_from} to {query_to}"
@@ -142,14 +141,14 @@ aq_process_ts = function(station_code, parameter, query_from, query_to) {
   points$DateTime <- as.POSIXct(points$DateTime, origin = "1970-01-01")
 
 
-  # get timeseries info
+  # get time series info
   ts_info <- json_data$TimeSeries
 
   # Create clean data frame
   df <- data.frame(
     datetime = points$DateTime,
     value = points$NumericValue1,
-    aq_location_id = station_code[1],
+    aq_location_id = location_code[1],
     parameter_name = ts_info$Parameter[1],
     label = ts_info$Label[1],
     unit = ts_info$Unit[1],
@@ -160,30 +159,30 @@ aq_process_ts = function(station_code, parameter, query_from, query_to) {
   return(df)
 }
 
-#' @title Get Aquarius Timeseries for Multiple Stations
+#' @title Get Aquarius Time series for Multiple locations
 #'
-#' @description `aq_get_ts_multi_station` retrieves and optionally downloads timeseries for one parameter at multiple locations
+#' @description Retrieves and optionally downloads time series for one parameter at multiple locations
 #'
-#' @details This function retrieves timeseries data for multiple locations and a single parameter.
-#' A list of values for either `cdec_code`, `location_id`, or `aq_location_id` should be provided and identified by the location identifier type.
+#' @details Retrieves time series data for multiple locations and a single parameter.
+#' A list of values for either cdec_code, location_id, or aq_location_id should be provided and identified by the location identifier type.
 #'
 #' @param cdec_code List of three-letter location codes matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying
 #' @param location_id List of numeric identifiers for location; one option for querying
 #' @param aq_location_id List of location identifiers as displayed in Aquarius database; one option for querying
 #' @param parameter Parameter name
-#' @param query_from Start datetime for query
-#' @param query_to End datetime for query
+#' @param query_from Start datetime for query; also accepts date
+#' @param query_to End datetime for query; also accepts date
 #'
-#' @return A data frame of the combined time series for all stations
+#' @return A data frame of the combined time series for all locations
 #'
 #' @examples
 #' \dontrun{
-#' multi_sta_ts <- aq_get_ts_multi_station(
+#' multi_sta_ts <- aq_get_ts_multi_location(
 #'   cdec_code = c("SJW", "MDM", "GSS"),
 #'   parameter = "Turbidity, Form Neph",
 #'   query_from = "2025-12-01 00:00:00",
 #'   query_to = "2026-01-01 00:00:00")
-#' multi_sta_ts <- aq_get_ts_multi_station(
+#' multi_sta_ts <- aq_get_ts_multi_location(
 #'   location_id = c("11447903", "11447905", "11447890"),
 #'   parameter = "Sp Cond",
 #'   query_from = "2025-12-01 00:00:00",
@@ -192,49 +191,47 @@ aq_process_ts = function(station_code, parameter, query_from, query_to) {
 #'   }
 #'
 #'@export
-aq_get_ts_multi_station <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NULL,
-                                    parameter, query_from, query_to,
-                                    write = FALSE, output = NULL) {
+aq_get_ts_multi_location <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NULL,
+                                    parameter, query_from, query_to) {
 
   # Check connection
   aq_ensure_connection()
 
-  # Looks for either cdec code, location_id, or aq_location_id within all stations
-  data_filtered <- deltawqAQ::aq_all_locations
+  # Looks for either cdec code, location_id, or aq_location_id within all locations
 
   if (!is.null(cdec_code)) {
-    data_filtered <- data_filtered |> dplyr::filter(cdec_code %in% .env$cdec_code)
+    data_filtered <- deltawqAQ::aq_all_locations |> dplyr::filter(cdec_code %in% .env$cdec_code)
   }
   if (!is.null(location_id)) {
-    data_filtered <- data_filtered |> dplyr::filter(location_id %in% .env$location_id)
+    data_filtered <- deltawqAQ::aq_all_locations |> dplyr::filter(location_id %in% .env$location_id)
   }
   if (!is.null(aq_location_id)) {
-    data_filtered <- data_filtered |> dplyr::filter(aq_location_id %in% .env$aq_location_id)
+    data_filtered <- deltawqAQ::aq_all_locations |> dplyr::filter(aq_location_id %in% .env$aq_location_id)
   }
 
-  # Check if any stations were found
+  # Check if any locations were found
   if (nrow(data_filtered) == 0) {
-    cli::cli_alert_warning("No stations matched the specified criteria")
+    cli::cli_alert_warning("No locations matched the specified criteria")
     return(NULL)
   }
 
-  # Get all station codes
-  station_codes <- data_filtered$aq_location_id
+  # Get all location codes
+  location_codes <- data_filtered$aq_location_id
 
   # Show progress message
-  cli::cli_alert_info("Processing {length(station_codes)} station{?s}...")
+  cli::cli_alert_info("Processing {length(location_codes)} location{?s}...")
 
   # Track successful and failed attempts to get data
-  successful_stations <- character()
-  failed_stations <- character()
+  successful_locations <- character()
+  failed_locations <- character()
 
-  # Process each station and collect results
-  all_ts_data <- purrr::map_df(station_codes, function(station) {
+  # Process each location and collect results
+  all_ts_data <- purrr::map_df(location_codes, function(location) {
     tryCatch({
-      cli::cli_alert_info("Processing station: {station}")
+      cli::cli_alert_info("Processing location: {location}")
 
       # Get time series data
-      df <- aq_process_ts(station, parameter, query_from, query_to)
+      df <- aq_process_ts(location, parameter, query_from, query_to)
 
       # Join with location metadata
       ts_data <- df |>
@@ -242,29 +239,29 @@ aq_get_ts_multi_station <- function(cdec_code = NULL, location_id = NULL, aq_loc
         dplyr::select(datetime,
                       cdec_code,
                       location_id,
-                      aq_station_name,
+                      aq_location_name,
                       aq_location_id,
                       parameter_name,
                       value,
                       unit,
                       approval)
 
-      # Track which stations successful
-      successful_stations <<- c(successful_stations, station)
+      # Track which locations successful
+      successful_locations <<- c(successful_locations, location)
       return(ts_data)
 
     }, error = function(e) {
-      cli::cli_alert_danger("Failed to process station {station}: {conditionMessage(e)}")
-      failed_stations <<- c(failed_stations, station)
+      cli::cli_alert_danger("Failed to process location {location}: {conditionMessage(e)}")
+      failed_locations <<- c(failed_locations, location)
       return(NULL)
     })
   })
 
   # Summary message
   cli::cli_h2("Processing Summary")
-  cli::cli_alert_success("Successfully processed: {length(successful_stations)} station{?s}")
-  if (length(failed_stations) > 0) {
-    cli::cli_alert_warning("Failed stations: {paste(failed_stations, collapse = ', ')}")
+  cli::cli_alert_success("Successfully processed: {length(successful_locations)} location{?s}")
+  if (length(failed_locations) > 0) {
+    cli::cli_alert_warning("Failed locations: {paste(failed_locations, collapse = ', ')}")
   }
 
   # Return data
@@ -272,20 +269,20 @@ aq_get_ts_multi_station <- function(cdec_code = NULL, location_id = NULL, aq_loc
 }
 
 
-#' @title Get Aquarius Timeseries for Multiple Parameters
+#' @title Get Aquarius time series for multiple parameters
 #'
-#' @description `aq_get_ts_multi_param` retrieves and optionally downloads timeseries for multiple parameters at one location
+#' @description Retrieves and optionally downloads time series for multiple parameters at one location
 #'
-#' @details This function retrieves timeseries data for multiple parameters and a single location.
-#' A single value for either `cdec_code`, `location_id`, or `aq_location_id` should be provided and identified by the location identifier type.
+#' @details Retrieves time series data for multiple parameters and a single location.
+#' A single value for either cdec_code, location_id, or aq_location_id should be provided and identified by the location identifier type.
 #' A list of parameters should be provided.
 #'
 #' @param cdec_code Three-letter location code matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying
 #' @param location_id Numeric identifier for location; one option for querying
 #' @param aq_location_id Location identifier as displayed in Aquarius database; one option for querying
 #' @param parameter List of parameter names
-#' @param query_from Start datetime for query
-#' @param query_to End datetime for query
+#' @param query_from Start datetime for query; also accepts date
+#' @param query_to End datetime for query; also accepts date
 #'
 #' @return A data frame of the combined time series for all parameters
 #'
@@ -294,56 +291,54 @@ aq_get_ts_multi_station <- function(cdec_code = NULL, location_id = NULL, aq_loc
 #' multi_param_ts <- aq_get_ts_multi_param(
 #'   cdec_code = "SJW",
 #'   parameter = c("Turbidity, Form Neph", "Water Temp", "Sp Cond"),
-#'   query_from = "2025-12-01T00:00:00Z",
-#'   query_to = "2026-01-01T00:00:00Z")
+#'   query_from = "2025-12-01 00:00:00",
+#'   query_to = "2026-01-01 00:00:00")
 #' multi_param_ts <- aq_get_ts_multi_param(
 #'   location_id = "11447903",
 #'   parameter = c("Sp Cond", "Water Temp", "CHL RFU"),
-#'   query_from = "2025-12-01T00:00:00Z",
+#'   query_from = "2025-12-01 00:00:00",
 #'   query_to = lubridate::now()
 #'   )
 #' }
 #'
 #' @export
 aq_get_ts_multi_param <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NULL,
-                                  parameter, query_from, query_to,
-                                  write = FALSE, output = NULL){
+                                  parameter, query_from, query_to){
 
    # Check connection
   aq_ensure_connection()
 
-  # Get station info for all locations
-  data <- aq_get_location_list(connect = FALSE)
+  # Load list of locations to filter from
+  data <- deltawqAQ::aq_all_locations
 
-  # Looks for either cdec code, location_id, or aq_location_id within all stations
-  data_filtered <- data
+  # Looks for either cdec code, location_id, or aq_location_id within all locations
 
   if (!is.null(cdec_code)) {
-    data_filtered <- data_filtered |> dplyr::filter(cdec_code %in% .env$cdec_code)
+    data_filtered <- deltawqAQ::aq_all_locations |> dplyr::filter(cdec_code %in% .env$cdec_code)
   }
   if (!is.null(location_id)) {
-    data_filtered <- data_filtered |> dplyr::filter(location_id %in% .env$location_id)
+    data_filtered <- deltawqAQ::aq_all_locations |> dplyr::filter(location_id %in% .env$location_id)
   }
   if (!is.null(aq_location_id)) {
-    data_filtered <- data_filtered |> dplyr::filter(aq_location_id %in% .env$aq_location_id)
+    data_filtered <- deltawqAQ::aq_all_locations |> dplyr::filter(aq_location_id %in% .env$aq_location_id)
   }
 
-  # Check if station was found
+  # Check if location was found
   if (nrow(data_filtered) == 0) {
-    cli::cli_alert_warning("No stations matched the specified criteria")
+    cli::cli_alert_warning("No locations matched the specified criteria")
     return(NULL)
   }
 
-  # Should be only one station
+  # Should be only one location
   if (nrow(data_filtered) > 1) {
-    cli::cli_alert_warning("Multiple stations found - using first match: {data_filtered$aq_location_id[1]}")
+    cli::cli_alert_warning("Multiple locations found - using first match: {data_filtered$aq_location_id[1]}")
   }
 
-  # Get station code
-  station_code <- data_filtered$aq_location_id[1]
+  # Get location code
+  location_code <- data_filtered$aq_location_id[1]
 
   # Show progress message
-  cli::cli_alert_info("Processing {length(parameter)} parameter{?s} for station: {station_code}")
+  cli::cli_alert_info("Processing {length(parameter)} parameter{?s} for location: {location_code}")
 
   # Track successes and failures
   successful_params <- character()
@@ -355,7 +350,7 @@ aq_get_ts_multi_param <- function(cdec_code = NULL, location_id = NULL, aq_locat
       cli::cli_alert_info("Processing parameter: {param}")
 
       # Get time series data
-      df <- aq_process_ts(station_code, param, query_from, query_to)
+      df <- aq_process_ts(location_code, param, query_from, query_to)
 
       # Join with location metadata
       ts_data <- df |>
@@ -363,7 +358,7 @@ aq_get_ts_multi_param <- function(cdec_code = NULL, location_id = NULL, aq_locat
         dplyr::select(datetime,
                       cdec_code,
                       location_id,
-                      aq_station_name,
+                      aq_location_name,
                       aq_location_id,
                       parameter_name,
                       value,
