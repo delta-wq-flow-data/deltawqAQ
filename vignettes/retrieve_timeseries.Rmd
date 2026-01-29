@@ -9,7 +9,7 @@ vignette: >
 
 ## Introduction
 
-This vignette describes a general workflow for querying and viewing data from the Aquarius database using the `deltawqAQ` package. Steps include identifying the appropriate location and parameter codes using the `aq_all_locations` dataset and the `aq_get_station_parameters` function, then querying a timeseries using the `aq_get_ts` function, and making a basic plot. For working with multiple parameters or stations, see the `retrieve_multi_ts` vignette. 
+This vignette describes a general workflow for querying and viewing data from the Aquarius database using the `deltawqAQ` package. Steps include identifying the appropriate location and parameter codes using the `aq_all_locations` dataset and the `aq_get_location_parameters` function, then querying a timeseries using the `aq_get_ts` function, and making a basic plot. For working with multiple parameters or locations, see the `retrieve_multi_ts` vignette. 
 
 ```{r, echo = FALSE}
 knitr::opts_chunk$set(
@@ -37,10 +37,10 @@ kable(head(deltawqAQ::aq_all_locations))
 ```
 
 ## Parameters
-Once you have picked your station, take a look at the parameters you would like to query. We have selected `SJW` for this example. You will need `parameter_name` for your timeseries query.
+Once you have picked your location, take a look at the parameters you would like to query. We have selected `SJW` for this example. You will need `parameter_name` for your timeseries query.
 
 ```{r}
-param_list <- aq_get_station_parameters(cdec_code = "SJW")
+param_list <- aq_get_location_parameters(cdec_code = "SJW")
 ```
 
 ```{r echo = FALSE}
@@ -49,7 +49,7 @@ kable(head(param_list, n = 15))
 
 ## Querying
 
-Now you can run your query for your station and parameter of interest. You can enter a datetime or a date for the `query_from` and `query_to` fields. 
+Now you can run your query for your location and parameter of interest. You can enter a datetime or a date for the `query_from` and `query_to` fields. 
 
 ```{r}
 ts <- aq_get_ts(cdec_code = "SJW", 
