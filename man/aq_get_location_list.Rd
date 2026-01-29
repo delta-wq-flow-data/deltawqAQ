@@ -2,22 +2,20 @@
 % Please edit documentation in R/aq_location_metadata.R
 \name{aq_get_location_list}
 \alias{aq_get_location_list}
-\title{Get Location Metadata for all Locations}
+\title{Get location metadata for all locations}
 \usage{
 aq_get_location_list()
 }
 \value{
-A data frame of all stations and station metadata in Aquarius database
+A data frame of all locations and location metadata in Aquarius database
 }
 \description{
-`aq_get_location_list` retrieves the full list of stations, including metadata
+Retrieves the full list of locations, including location metadata
 }
 \details{
 This function retrieves metadata for all the locations and can be used with aq_get_location_metadata to filter information
-to stations of interest.
+to locations of interest.
 }
 \examples{
-\dontrun{
-all_locations <- aq_get_location_list(connect = TRUE)
-}
+all_locations <- aq_get_location_list()
 }

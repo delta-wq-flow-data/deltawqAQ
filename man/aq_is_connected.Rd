@@ -10,7 +10,7 @@ aq_is_connected()
 Logical indicating whether there is an active connection
 }
 \description{
-`aq_is_connected` checks whether there is an active Aquarius connection.
+aq_is_connected checks whether there is an active Aquarius connection.
 }
 \details{
 This function returns TRUE if a connection has been established and not

@@ -10,11 +10,11 @@ aq_disconnect()
 Invisible NULL
 }
 \description{
-`aq_disconnect` disconnects from the Aquarius database and clears stored connection.
+aq_disconnect disconnects from the Aquarius database and clears stored connection.
 }
 \details{
 This function closes the active connection and clears the connection state
-from the package environment. After disconnecting, you'll need to call `aq_connect()`
+from the package environment. After disconnecting, you'll need to call aq_connect()
 again before using other package functions.
 }
 \examples{

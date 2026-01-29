@@ -18,17 +18,15 @@ aq_get_location_metadata(
 \item{aq_location_id}{Location identifier as displayed in Aquarius database; one option for querying}
 }
 \value{
-A data frame of filtered stations and station metadata in Aquarius database
+A data frame of 9 columns, with each row displaying metadata for one location, based on queried locations.
 }
 \description{
-`aq_get_location_metadata` retrieves metadata from Aquarius database for a selection of locations.
+Retrieves metadata from Aquarius database for a selection of locations.
 }
 \details{
 This function retrieves metadata for all the locations, then filters to locations of interest.
 }
 \examples{
-\dontrun{
 SJW_metadata <- aq_get_location_metadata(cdec_code = "SJW")
 aq_get_location_metadata(location_id = "11447903")
-}
 }

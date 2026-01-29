@@ -21,13 +21,13 @@ aq_connect(
 
 \item{timeout_seconds}{Number of seconds before connection times out (default: 30)}
 
-\item{force_reconnect}{Logical. If `TRUE`, forces a new connection even if one exists (default: FALSE)}
+\item{force_reconnect}{Logical. If TRUE, forces a new connection even if one exists (default: FALSE)}
 }
 \value{
 Invisible NULL (connection stored in package environment)
 }
 \description{
-`aq_connect` establishes and stores a connection to the Aquarius database.
+aq_connect establishes and stores a connection to the Aquarius database.
 }
 \details{
 This function creates a connection that can be reused across

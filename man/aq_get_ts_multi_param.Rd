@@ -2,7 +2,7 @@
 % Please edit documentation in R/aq_timeseries.R
 \name{aq_get_ts_multi_param}
 \alias{aq_get_ts_multi_param}
-\title{Get Aquarius Timeseries for Multiple Parameters}
+\title{Get Aquarius time series for multiple parameters}
 \usage{
 aq_get_ts_multi_param(
   cdec_code = NULL,
@@ -10,9 +10,7 @@ aq_get_ts_multi_param(
   aq_location_id = NULL,
   parameter,
   query_from,
-  query_to,
-  write = FALSE,
-  output = NULL
+  query_to
 )
 }
 \arguments{
@@ -24,19 +22,19 @@ aq_get_ts_multi_param(
 
 \item{parameter}{List of parameter names}
 
-\item{query_from}{Start datetime for query}
+\item{query_from}{Start datetime for query; also accepts date}
 
-\item{query_to}{End datetime for query}
+\item{query_to}{End datetime for query; also accepts date}
 }
 \value{
 A data frame of the combined time series for all parameters
 }
 \description{
-`aq_get_ts_multi_param` retrieves and optionally downloads timeseries for multiple parameters at one location
+Retrieves and optionally downloads time series for multiple parameters at one location
 }
 \details{
-This function retrieves timeseries data for multiple parameters and a single location.
-A single value for either `cdec_code`, `location_id`, or `aq_location_id` should be provided and identified by the location identifier type.
+Retrieves time series data for multiple parameters and a single location.
+A single value for either cdec_code, location_id, or aq_location_id should be provided and identified by the location identifier type.
 A list of parameters should be provided.
 }
 \examples{
@@ -44,12 +42,12 @@ A list of parameters should be provided.
 multi_param_ts <- aq_get_ts_multi_param(
   cdec_code = "SJW",
   parameter = c("Turbidity, Form Neph", "Water Temp", "Sp Cond"),
-  query_from = "2025-12-01T00:00:00Z",
-  query_to = "2026-01-01T00:00:00Z")
+  query_from = "2025-12-01 00:00:00",
+  query_to = "2026-01-01 00:00:00")
 multi_param_ts <- aq_get_ts_multi_param(
   location_id = "11447903",
   parameter = c("Sp Cond", "Water Temp", "CHL RFU"),
-  query_from = "2025-12-01T00:00:00Z",
+  query_from = "2025-12-01 00:00:00",
   query_to = lubridate::now()
   )
 }

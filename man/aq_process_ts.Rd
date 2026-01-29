@@ -2,26 +2,26 @@
 % Please edit documentation in R/aq_timeseries.R
 \name{aq_process_ts}
 \alias{aq_process_ts}
-\title{Process Aquarius Timeseries}
+\title{Process Aquarius Time series}
 \usage{
-aq_process_ts(station_code, parameter, query_from, query_to)
+aq_process_ts(location_code, parameter, query_from, query_to)
 }
 \arguments{
-\item{station_code}{Aquarius station/location code of interest}
+\item{location_code}{Aquarius location/location code of interest}
 
 \item{parameter}{Parameter name from Aquarius}
 
-\item{query_from}{Start datetime for query}
+\item{query_from}{Start datetime for query; also accepts date}
 
-\item{query_to}{End datetime for query}
+\item{query_to}{End datetime for query; also accepts date}
 }
 \value{
-A data frame with 7 columns that will be further modified in `get_ts` functions
+A data frame with 7 columns that will be further modified in get_ts functions
 }
 \description{
-`aq_process_ts` Processes the timeseries into a clean data frame after Aquarius database retrieval.
+Processes the time series into a clean data frame after Aquarius database retrieval.
 }
 \details{
-This function cleans up the JSON format data obtained by the Aquarius API request.
-The function is called in the `get_ts` functions as an intermediate step.
+Cleans up the JSON format data obtained by the Aquarius API request.
+The function is called in the get_ts functions as an intermediate step.
 }

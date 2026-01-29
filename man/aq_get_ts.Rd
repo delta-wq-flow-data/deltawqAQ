@@ -2,7 +2,7 @@
 % Please edit documentation in R/aq_timeseries.R
 \name{aq_get_ts}
 \alias{aq_get_ts}
-\title{Get Aquarius Timeseries}
+\title{Get Aquarius Time series}
 \usage{
 aq_get_ts(
   cdec_code = NULL,
@@ -22,18 +22,18 @@ aq_get_ts(
 
 \item{parameter}{Parameter name}
 
-\item{query_from}{Start datetime for query}
+\item{query_from}{Start datetime for query; also accepts date}
 
-\item{query_to}{End datetime for query}
+\item{query_to}{End datetime for query; also accepts date}
 }
 \value{
 A data frame containing the time series values and associated metadata.
 }
 \description{
-`aq_get_ts` retrieves time series data from an Aquarius database and optionally downloads and writes the timeseries.
+Retrieves time series data from an Aquarius database and optionally downloads and writes the time series.
 }
 \details{
-This function retrieves timeseries data for a single location and a single parameter.
+Retrieves time series data for a single location and a single parameter.
 Exactly one value of either `cdec_code`, `location_id`, or `aq_location_id` should be provided and identified by the location identifier type.
 }
 \examples{
@@ -41,12 +41,12 @@ Exactly one value of either `cdec_code`, `location_id`, or `aq_location_id` shou
 ts_data <- aq_get_ts(
  cdec_code = "SJW",
  parameter = "Water Temp",
- query_from = "2025-12-01T00:00:00Z",
- query_to = "2026-01-01T00:00:00Z")
+ query_from = "2025-12-01 00:00:00",
+ query_to = "2026-01-01 00:00:00")
 ts_data <- aq_get_ts(
  location_id = "11447903",
  parameter = "Sp Cond",
- query_from = "2025-12-01T00:00:00Z",
+ query_from = "2025-12-01 00:00:00",
  query_to = lubridate::now()
  )
  }

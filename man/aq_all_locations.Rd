@@ -8,7 +8,7 @@
 Data frame of 9 columns x Number of Aquarius locations
 }
 \source{
-Aquarius API, as called through the 'aq_get_location_list' function
+Aquarius API, as called through the `aq_get_location_list` function
 }
 \usage{
 aq_all_locations
