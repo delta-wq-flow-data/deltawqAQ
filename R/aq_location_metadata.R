@@ -1,6 +1,6 @@
 #' @title Get Location Metadata
 
-#' @description `aq_get_location_metadata` retrieves metadata from Aquarius database for a selection of locations.
+#' @description Retrieves metadata from Aquarius database for a selection of locations.
 
 #' @details This function retrieves metadata for all the locations, then filters to locations of interest.
 
@@ -8,13 +8,12 @@
 #' @param location_id Numeric identifier for location; one option for querying
 #' @param aq_location_id Location identifier as displayed in Aquarius database; one option for querying
 
-#' @return A data frame of filtered stations and station metadata in Aquarius database
-
+#' @return A data frame of 9 columns, with each row displaying metadata for one location, based on queried locations.
+#'
 #' @examples
-#' \dontrun{
 #' SJW_metadata <- aq_get_location_metadata(cdec_code = "SJW")
 #' aq_get_location_metadata(location_id = "11447903")
-#' }
+
 
 #' @export
 aq_get_location_metadata = function(cdec_code = NULL, location_id = NULL, aq_location_id = NULL) {
@@ -39,19 +38,18 @@ aq_get_location_metadata = function(cdec_code = NULL, location_id = NULL, aq_loc
 
 
 
-#' @title Get Location Metadata for all Locations
+#' @title Get location metadata for all locations
 
-#' @description `aq_get_location_list` retrieves the full list of stations, including metadata
+#' @description Retrieves the full list of locations, including location metadata
 
 #' @details This function retrieves metadata for all the locations and can be used with aq_get_location_metadata to filter information
-#' to stations of interest.
+#' to locations of interest.
 
-#' @return A data frame of all stations and station metadata in Aquarius database
+#' @return A data frame of all locations and location metadata in Aquarius database
 
 #' @examples
-#' \dontrun{
-#' all_locations <- aq_get_location_list(connect = TRUE)
-#' }
+#' all_locations <- aq_get_location_list()
+
 
 #' @export
 aq_get_location_list  <- function() {
@@ -72,14 +70,14 @@ aq_get_location_list  <- function() {
   # Create data frame for useful location information
   df <- data.frame(
     aq_location_id = json_locations$Identifier,
-    aq_station_name = json_locations$Name,
+    aq_location_name = json_locations$Name,
     aq_unique_id = json_locations$UniqueId,
     updated_at = json_locations$LastModified,
     stringsAsFactors = FALSE
   ) |>
     dplyr::filter(grepl("_", aq_location_id)) |>
     tidyr::separate(col = aq_location_id, into = c("location_id", "cdec_code"), sep = "_", remove = FALSE) |>
-    tidyr::separate(col = aq_station_name, into = c("cdec", "location_name"), sep = " - ", remove = FALSE ) |>
+    tidyr::separate(col = aq_location_name, into = c("cdec", "location_name"), sep = " - ", remove = FALSE ) |>
     dplyr::mutate(cdec_code = toupper(substr(cdec_code, 1, 3)))
 
   # Get latitude and longitude for stations
@@ -93,7 +91,7 @@ aq_get_location_list  <- function() {
       latitude = .x$Latitude,
       longitude = .x$Longitude)) |>
     dplyr::left_join(df, by = "aq_location_id") |>
-    dplyr::select(cdec_code, location_id, location_name, latitude, longitude, aq_location_id, aq_station_name, aq_unique_id, updated_at)
+    dplyr::select(cdec_code, location_id, location_name, latitude, longitude, aq_location_id, aq_location_name, aq_unique_id, updated_at)
 
   # Return data frame
   return(location_df)
