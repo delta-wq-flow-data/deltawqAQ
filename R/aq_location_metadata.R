@@ -46,9 +46,6 @@ aq_get_location_metadata = function(cdec_code = NULL, location_id = NULL, aq_loc
 #' @details This function retrieves metadata for all the locations and can be used with aq_get_location_metadata to filter information
 #' to stations of interest.
 
-#' @param connect Logical value indicates whether or not connection to Aquarius is needed. When this function is called within
-#' other functions that have already connected to the database, this value should be `FALSE` to avoid errors.
-
 #' @return A data frame of all stations and station metadata in Aquarius database
 
 #' @examples
@@ -57,15 +54,10 @@ aq_get_location_metadata = function(cdec_code = NULL, location_id = NULL, aq_loc
 #' }
 
 #' @export
-aq_get_location_list  <- function(connect = TRUE) {
+aq_get_location_list  <- function() {
 
-  # Only connect if requested
-  if (connect) {
-    aq_connect(server_hostname = Sys.getenv("AQTS_SERVER"),
-               username = Sys.getenv("AQTS_USERNAME"),
-               password = Sys.getenv("AQTS_PASSWORD"))
-    on.exit(aq_disconnect())
-  }
+  # Check connection
+  aq_ensure_connection()
 
   # Location description call provides list of all locations if no parameters are called;
   # otherwise filters to selected stations(s)
@@ -97,7 +89,7 @@ aq_get_location_list  <- function(connect = TRUE) {
   location_df <- purrr::map_df(
     json_location_data,
     ~ data.frame(
-      aq_location_id = .x$Identifier,
+      # aq_location_id = .x$Identifier,
       latitude = .x$Latitude,
       longitude = .x$Longitude)) |>
     dplyr::left_join(df) |>

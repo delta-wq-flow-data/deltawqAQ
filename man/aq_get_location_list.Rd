@@ -4,11 +4,7 @@
 \alias{aq_get_location_list}
 \title{Get Location Metadata for all Locations}
 \usage{
-aq_get_location_list(connect = TRUE)
-}
-\arguments{
-\item{connect}{Logical value indicates whether or not connection to Aquarius is needed. When this function is called within
-other functions that have already connected to the database, this value should be `FALSE` to avoid errors.}
+aq_get_location_list()
 }
 \value{
 A data frame of all stations and station metadata in Aquarius database

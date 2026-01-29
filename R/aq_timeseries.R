@@ -33,12 +33,8 @@
 aq_get_ts <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NULL,
                       parameter, query_from, query_to) {
 
-  # Connect once at the start
-  aq_connect(server_hostname = Sys.getenv("AQTS_SERVER"),
-             username = Sys.getenv("AQTS_USERNAME"),
-             password = Sys.getenv("AQTS_PASSWORD"))
-
-  on.exit(aq_disconnect())
+  # Check connection
+  aq_ensure_connection()
 
   # Looks for either cdec code, location_id, or aq_location_id within all stations
   data_filtered <- deltawqAQ::aq_all_locations
@@ -99,7 +95,7 @@ aq_get_ts <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NUL
 #' @return A data frame with 7 columns that will be further modified in `get_ts` functions
 aq_process_ts = function(station_code, parameter, query_from, query_to) {
 
-  filtered_params <- aq_get_station_parameters(aq_location_id = station_code, connect = FALSE)
+  filtered_params <- aq_get_station_parameters(aq_location_id = station_code)
 
   # Filter to the specific parameter requested
   param_info <- filtered_params |>
@@ -111,8 +107,6 @@ aq_process_ts = function(station_code, parameter, query_from, query_to) {
 
   # Use the first label if multiple exist
   label <- param_info$label[1]
-
-  cli::cli_alert_info("Found label: {label}")
 
   # Get the timeseries ID
   # AQUARIUS uses the format: Parameter.Label@LocationIdentifier
@@ -202,12 +196,8 @@ aq_get_ts_multi_station <- function(cdec_code = NULL, location_id = NULL, aq_loc
                                     parameter, query_from, query_to,
                                     write = FALSE, output = NULL) {
 
-  # Connect once at the start
-  aq_connect(server_hostname = Sys.getenv("AQTS_SERVER"),
-             username = Sys.getenv("AQTS_USERNAME"),
-             password = Sys.getenv("AQTS_PASSWORD"))
-
-  on.exit(aq_disconnect())
+  # Check connection
+  aq_ensure_connection()
 
   # Looks for either cdec code, location_id, or aq_location_id within all stations
   data_filtered <- deltawqAQ::aq_all_locations
@@ -318,12 +308,9 @@ aq_get_ts_multi_station <- function(cdec_code = NULL, location_id = NULL, aq_loc
 aq_get_ts_multi_param <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NULL,
                                   parameter, query_from, query_to,
                                   write = FALSE, output = NULL){
-  # Connect once at the start
-  aq_connect(server_hostname = Sys.getenv("AQTS_SERVER"),
-             username = Sys.getenv("AQTS_USERNAME"),
-             password = Sys.getenv("AQTS_PASSWORD"))
 
-  on.exit(aq_disconnect())
+   # Check connection
+  aq_ensure_connection()
 
   # Get station info for all locations
   data <- aq_get_location_list(connect = FALSE)

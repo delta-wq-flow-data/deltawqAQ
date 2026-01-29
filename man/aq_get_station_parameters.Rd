@@ -7,8 +7,7 @@
 aq_get_station_parameters(
   cdec_code = NULL,
   location_id = NULL,
-  aq_location_id = NULL,
-  connect = TRUE
+  aq_location_id = NULL
 )
 }
 \arguments{
@@ -16,16 +15,14 @@ aq_get_station_parameters(
 
 \item{location_id}{Numeric identifier for location; one option for querying}
 
-\item{aq_location_id}{Location identifier as displayed in Aquarius database; one option for querying}
-
-\item{connect}{Logical value indicates whether or not connection to Aquarius is needed. When this function is called within
+\item{aq_location_id}{Location identifier as displayed in Aquarius database; one option for querying
 other functions that have already connected to the database, this value should be `FALSE` to avoid errors.}
 }
 \value{
 A data frame of parameters filtered to queried location(s)
 }
 \description{
-`aq_get_station_parameters` Retrieves a list of all the parameters associated with one or multiple locations.
+`aq_get_station_parameters`retrieves a list of all the parameters associated with one or multiple locations.
 }
 \details{
 Retrieves the parameters (IDs, names) and specific timeseries identifiers associated with queried locations.

@@ -1,12 +1,11 @@
 #' @title Get Station Parameters
-#' @description `aq_get_station_parameters` Retrieves a list of all the parameters associated with one or multiple locations.
+#' @description `aq_get_station_parameters`retrieves a list of all the parameters associated with one or multiple locations.
 #'
 #' @details Retrieves the parameters (IDs, names) and specific timeseries identifiers associated with queried locations.
 #'
 #' @param cdec_code Three-letter location code matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying
 #' @param location_id Numeric identifier for location; one option for querying
 #' @param aq_location_id Location identifier as displayed in Aquarius database; one option for querying
-#' @param connect Logical value indicates whether or not connection to Aquarius is needed. When this function is called within
 #' other functions that have already connected to the database, this value should be `FALSE` to avoid errors.
 #'
 #' @return A data frame of parameters filtered to queried location(s)
@@ -19,15 +18,10 @@
 #' }
 #'
 #' @export
-aq_get_station_parameters = function(cdec_code=NULL, location_id=NULL, aq_location_id=NULL, connect = TRUE) {
+aq_get_station_parameters = function(cdec_code=NULL, location_id=NULL, aq_location_id=NULL) {
 
-  # Only connect if requested (for standalone use)
-  if (connect) {
-    aq_connect(server_hostname = Sys.getenv("AQTS_SERVER"),
-               username = Sys.getenv("AQTS_USERNAME"),
-               password = Sys.getenv("AQTS_PASSWORD"))
-    on.exit(aq_disconnect())
-  }
+  # Check connection
+  aq_ensure_connection()
 
   # Looks for either cdec code, location_id, or aq_location_id within all stations
   data_filtered <- deltawqAQ::aq_all_locations
@@ -47,12 +41,8 @@ aq_get_station_parameters = function(cdec_code=NULL, location_id=NULL, aq_locati
 
   # Use purrr to loop through each identifier and get time series descriptions
   json_ts_params_df <- purrr::map_df(Identifiers, function(id) {
-    cli::cli_alert_info("Fetching parameters for station: {id}")
 
     ts_params <- timeseries$getTimeSeriesDescriptions(locationIdentifier = id)
-
-    # Debug: check what we got
-    cli::cli_alert_info("Found {length(ts_params$Identifier)} time series")
 
     if (length(ts_params$Identifier) > 0) {
       data.frame(
