@@ -89,10 +89,10 @@ aq_get_location_list  <- function() {
   location_df <- purrr::map_df(
     json_location_data,
     ~ data.frame(
-      # aq_location_id = .x$Identifier,
+      aq_location_id = .x$Identifier,
       latitude = .x$Latitude,
       longitude = .x$Longitude)) |>
-    dplyr::left_join(df) |>
+    dplyr::left_join(df, by = "aq_location_id") |>
     dplyr::select(cdec_code, location_id, location_name, latitude, longitude, aq_location_id, aq_station_name, aq_unique_id, updated_at)
 
   # Return data frame
