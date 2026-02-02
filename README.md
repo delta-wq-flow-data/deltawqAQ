@@ -1,12 +1,3 @@
----
-output: 
-  github_document:
-    html_preview: true
-  html_document:
-    theme:
-      version: 5
----
-      
 # deltawqAQ
 
 This package supports Bureau of Reclamation's Delta Water Quality monitoring. 
