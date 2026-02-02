@@ -1,6 +1,11 @@
 ---
 title: "Timeseries workflow"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_document:
+    toc: true
+    toc_float:
+      collapsed: true
+      smooth_scroll: true
 vignette: >
   %\VignetteIndexEntry{Timeseries workflow}
   %\VignetteEngine{knitr::rmarkdown}
@@ -20,34 +25,39 @@ knitr::opts_chunk$set(
 
 Start by loading packages. 
 
-```{r setup}
+```{r setup, warning = FALSE, message = FALSE}
 library(deltawqAQ)
 library(ggplot2)
 library(lubridate)
 library(dplyr)
-library(knitr)
+library(DT)
 ```
 
-## Locations
+## Select location
 
 To work with Aquarius data, start by figuring out the location code(s) of interest. Functions will take `cdec_code`, `location_id`, or `aquarius_id`, with most users tending to be most familiar with `cdec_code`. The `aq_all_locations` data object gets generated in the package, and locations should be stable once all locations become telemetered.
 
 ```{r, echo = FALSE}
-kable(head(deltawqAQ::aq_all_locations))
+DT::datatable(deltawqAQ::aq_all_locations, 
+              options = list(scrollX = TRUE,
+                             order = list(list(1, 'asc')),
+                             autoWidth = TRUE))
 ```
 
-## Parameters
-Once you have picked your location, take a look at the parameters you would like to query. We have selected `SJW` for this example. You will need `parameter_name` for your timeseries query.
+## Select parameter
+Once you have picked your location, take a look at the parameters you would like to query. The `aq_get_location_parameters` function will connect to the Aquarius database based on your credentials, then retrieve all parameters associated with the location you have selected. 
+
+We have selected the `SJW` location for this example. You will need `parameter_name` for your time series query, so identify the correct value for the next step.
 
 ```{r}
 param_list <- aq_get_location_parameters(cdec_code = "SJW")
 ```
 
 ```{r echo = FALSE}
-kable(head(param_list, n = 15))
+DT::datatable(param_list, options = list(scrollX = TRUE, autoWidth = TRUE))
 ```
 
-## Querying
+## Query data
 
 Now you can run your query for your location and parameter of interest. You can enter a datetime or a date for the `query_from` and `query_to` fields. 
 
@@ -59,36 +69,45 @@ ts <- aq_get_ts(cdec_code = "SJW",
 ```
 
 ```{r, echo = FALSE}
-kable(head(ts))
+DT::datatable(ts, options = list(scrollX = TRUE, autoWidth = TRUE))
 ```
 
-## Modify data
+## Summarize data
+You may want to condense the data by creating a dataset with daily averages. 
 
-You may want to condense the data by getting daily averages. 
-
-```{r}
+```{r, warning = FALSE, message = FALSE}
 ts_daily <- ts |> 
   mutate(date = lubridate::date(datetime)) |>
   group_by(date, cdec_code) |>
-  summarize(wt_daily = mean(value)) |>
+  summarize(wt_daily = round(mean(value),2)) |>
   ungroup()
 ```
 
 ```{r, echo = FALSE}
-kable(head(ts_daily))
+DT::datatable(ts_daily, 
+              options = list(scrollX = TRUE, 
+                                       autoWidth = TRUE))
 ```
 
-## View data
-Now you can make a simple plot for daily average values for the timeseries.
+## Visualize data
+Now you can make a simple plot for daily average values for the time series.
 
-```{r, fig.height = 4, fig.width = 6}
+```{r, fig.height = 4, fig.width = 6, fig.title = ts_daily$aq_location_name[1], fig.alt = "Plot of daily average water temperature at SJW"}
+
 ggplot(ts_daily) + 
   geom_point(aes(x = date, y = wt_daily)) +
   geom_line(aes(x = date, y = wt_daily)) +
-  labs(x = "Date", y = "Water Temp (°C)", title = ts_daily$aq_location_name[1] ) +
+  labs(x = "Date", y = "Water Temp (°C)") +
   theme_bw()+
   theme(axis.title = element_text(size = 12),
         axis.text = element_text(size = 11))
 ```
 
+### Write data
 
+You can then write data to your local drive. Specify the filepath of interest and customize the filename if desired. 
+
+```{r, eval = FALSE}
+write.csv(ts_daily, 
+          here::here(paste0("ts_SJW_wt.csv")))
+```

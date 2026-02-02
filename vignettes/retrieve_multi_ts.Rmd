@@ -1,6 +1,11 @@
 ---
 title: "Retrieve multiple parameters and locations"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_document:
+    toc: true
+    toc_float:
+      collapsed: true
+      smooth_scroll: true
 vignette: >
   %\VignetteIndexEntry{Retrieve multiple parameters and locations}
   %\VignetteEngine{knitr::rmarkdown}
@@ -17,12 +22,13 @@ knitr::opts_chunk$set(
 ## Introduction
 
 This vignette describes a general workflow for querying and viewing multi-parameter and multi-location data from the Aquarius database using the `deltawqAQ` package. Steps include identifying the appropriate location and parameter codes using the `aq_all_locations` dataset and the `aq_get_location_parameters` function, then querying timeseries using the `aq_get_ts_multi_param` and `aq_get_ts_multi_location` functions. Code for making basic plot and writing the data are also included. 
-```{r setup}
+
+```{r setup, warning = FALSE, message = FALSE}
 library(deltawqAQ)
 library(ggplot2)
 library(lubridate)
 library(dplyr)
-library(knitr)
+library(DT)
 ```
 
 
@@ -31,25 +37,32 @@ library(knitr)
 To work with Aquarius data, start by figuring out the location code(s) of interest. Functions will take `cdec_code`, `location_id`, or `aquarius_id`, with most users tending to be most familiar with `cdec_code`. The `aq_all_locations` data object gets generated in the package, and locations should be stable once all locations become telemetered.
 
 ```{r}
-kable(head(deltawqAQ::aq_all_locations))
+DT::datatable(deltawqAQ::aq_all_locations, 
+              options = list(scrollX = TRUE,
+                             order = list(list(1, 'asc')),
+                             autoWidth = TRUE))
 ```
-
-## Multiple parameters for one location
-Once you have picked your location, take a look at the parameters you would like to query. We have selected `SJW` for this example. You will need `parameter_name` for your timeseries query.
 
 ```{r}
 location = "SJW"
 ```
 
+## Multiple parameters for one location
+Once you have picked your location, take a look at the parameters you would like to query. The `aq_get_location_parameters` function will connect to the Aquarius database based on your credentials, then retrieve all parameters associated with the location you have selected. 
+
+We have selected the `SJW` location for this example. You will need `parameter_name` for your time series query, so identify the correct value for the next step.
+
 ### Select parameter names
 Now use `aq_get_location_parameters` to figure out the parameter names for your location.
 
 ```{r, echo = FALSE}
-kable(head(aq_get_location_parameters(cdec_code = location), n = 15))
+DT::datatable(aq_get_location_parameters(cdec_code = location), 
+              options = list(scrollX = TRUE, 
+                             autoWidth = TRUE))
 ```
 
 ### Query data 
-Now you can use the `aq_get_ts_multi_param` function to run your query for your location and parameters of interest. You can enter a datetime or a date for the `query_from` and `query_to` fields. 
+Now that you have your location and parameters you can use the `aq_get_ts_multi_param` function to run your query for your the timeframe of interest. You can enter a datetime or a date for the `query_from` and `query_to` fields. 
 
 #### Select parameters and dates
 ```{r}
@@ -59,7 +72,7 @@ end_date = lubridate::today()
 ```
 
 #### Query and look at data
-```{r}
+```{r, message = FALSE, warning = FALSE}
 multi_param_ts <- aq_get_ts_multi_param(
   cdec_code = location, 
   parameter = params, 
@@ -71,23 +84,25 @@ print(paste("Parameters with data:", paste(unique(multi_param_ts$parameter_name)
 ```
 
 ```{r, echo = FALSE}
-kable(head(multi_param_ts))
+DT::datatable(multi_param_ts, 
+              options = list(scrollX = TRUE, 
+                             autoWidth = TRUE))
 ```
 
 
 ### Summarize by daily values
-You may want to condense the data by getting daily averages.
+You may want to condense the data by creating a dataset with daily averages. 
 
 ```{r}
 multi_param_daily <- multi_param_ts %>%
   mutate(date = lubridate::date(datetime)) %>%
   group_by(date, cdec_code, location_id, parameter_name) %>%
-  summarize(daily_avg = mean(value)) %>%
+  summarize(daily_avg = round(mean(value),2)) %>%
   ungroup()
 ```
 
 ```{r, echo = FALSE}
-kable(head(multi_param_daily))
+DT::datatable(multi_param_daily, options = list(scrollX = TRUE, autoWidth = TRUE))
 ```
 
 
@@ -96,13 +111,12 @@ kable(head(multi_param_daily))
 If you'd like to visualize your data, here are some examples of plots you can make with your data. 
 
 #### Daily Averages
-
-```{r fig.height = 7, fig.width = 6}
+```{r fig.height = 7, fig.width = 6, fig.alt = "Plot of daily average values across different parameters at San Joaquin West (SJW)"}
 ggplot(multi_param_daily) +
   geom_point(aes(x=date, y=daily_avg, color = parameter_name)) +
   geom_line(aes(x=date, y=daily_avg, color = parameter_name)) +
   facet_wrap(~parameter_name, nrow = nrow(multi_param_daily), scales = "free_y") +
-  labs(x = "Date", y = "Daily Average Value", title = paste("Water Quality for", location))+
+  labs(x = "Date", y = "Daily Average Value", title = paste("Daily Average Water Quality for", location))+
   theme_bw() +
   theme(strip.text = element_text(size = 12),
         axis.title = element_text(size = 12),
@@ -112,12 +126,11 @@ ggplot(multi_param_daily) +
 ```
 
 #### 15 minute data
-
-```{r, fig.height = 7, fig.width = 6}
+```{r, fig.height = 7, fig.width = 6, fig.alt = "Plot of 15-minute values across different parameters at San Joaquin West (SJW)"}
 ggplot(multi_param_ts) +
   geom_line(aes(datetime, value, color = parameter_name)) +
   facet_wrap(~parameter_name, nrow = nrow(multi_param_ts), scales = "free_y") +
-  labs(x = "Datetime", y = "Value", title = paste("Water Quality for", location))+
+  labs(x = "Datetime", y = "Value", title = paste("15-minute Water Quality for", location))+
   theme_bw() +
   theme(strip.text = element_text(size = 12),
         axis.title = element_text(size = 12),
@@ -127,10 +140,9 @@ ggplot(multi_param_ts) +
 ```
 
 ### Write data
-
 You can then write data to your local drive. Specify the filepath of interest and customize the filename if desired. This example writes the averaged data. 
 
-```{r}
+```{r, eval=FALSE}
 param_label <- paste(unique(multi_param_ts$parameter_name), collapse = "-")
 
 write.csv(multi_param_daily, 
@@ -150,13 +162,15 @@ locations <- c("GSS", "SMR", "OSJ", "HOL", "OBI", "OH4", "MDM")
 Now use `aq_get_location_parameters` to figure out the parameter names for your location.
 
 ```{r, echo = FALSE}
-kable(head(aq_get_location_parameters(cdec_code = locations), n = 15))
+DT::datatable(aq_get_location_parameters(cdec_code = locations), 
+              options = list(scrollX = TRUE, 
+                             autoWidth = TRUE))
 ```
 
 ### Query data 
-Now you can use the `aq_get_ts_multi_location` function to run your query for your parameter and locations of interest. You can enter a datetime or a date for the `query_from` and `query_to` fields. 
+Now that you have your locations and parameter you can use the `aq_get_ts_multi_location` function to run your query for the timeframe of interest. You can enter a datetime or a date for the `query_from` and `query_to` fields. 
 
-#### Select query parameter and dates
+#### Select parameter and dates
 ```{r}
 param = "Turbidity, Form Neph"
 startdate = "2025-12-01"
@@ -164,7 +178,7 @@ enddate = lubridate::today()
 ```
 
 #### Query and look at data
-```{r}
+```{r, message = FALSE, warning = FALSE}
 multi_location_ts <- aq_get_ts_multi_location(cdec_code = locations, 
                                          parameter = param, 
                                          query_from = startdate, 
@@ -174,22 +188,22 @@ print(paste("locations with data:", paste(unique(multi_location_ts$cdec_code), c
 ```
 
 ```{r, echo = FALSE}
-kable(head(multi_location_ts))
+DT::datatable(multi_location_ts, options = list(scrollX = TRUE, autoWidth = TRUE))
 ```
 
 ### Summarize by daily values
-You may want to condense the data by getting daily averages.
+You may want to condense the data by creating a dataset with daily averages. 
 
 ```{r}
 multi_location_daily <- multi_location_ts |> 
   mutate(date = lubridate::date(datetime)) |> 
   group_by(date, cdec_code, location_id, parameter_name) |> 
-  summarize(daily_avg = mean(value)) |> 
+  summarize(daily_avg = round(mean(value),2)) |> 
   ungroup()
 ```
 
 ```{r, echo = FALSE}
-kable(head(multi_location_daily))
+DT::datatable(multi_location_daily, options = list(scrollX = TRUE, autoWidth = TRUE))
 ```
 
 
@@ -199,12 +213,12 @@ If you'd like to visualize your data, here are some examples of plots you can ma
 
 #### Daily Averages
 
-```{r, fig.height = 7, fig.width = 6}
+```{r, fig.height = 7, fig.width = 6, fig.alt = "Plot of daily average turbidity across stations"}
 ggplot(multi_location_daily) +
   geom_point(aes(x=date, y=daily_avg, color = cdec_code)) +
   geom_line(aes(x=date, y=daily_avg, color = cdec_code)) +
   facet_wrap(~cdec_code, nrow = nrow(multi_location_daily), scales = "free_y") +
-  labs(x = "Date", y = "Daily Average Value", title = paste("Water Quality for", param))+
+  labs(x = "Date", y = "Daily Average Value", title = paste("Daily Average", param, "across stations"))+
   theme_bw() +
   theme(strip.text = element_text(size = 12),
         axis.title = element_text(size = 12),
@@ -217,12 +231,12 @@ ggplot(multi_location_daily) +
 
 Include a threshold line if useful.
 
-```{r, fig.height = 7, fig.width = 6}
+```{r, fig.height = 7, fig.width = 6, fig.alt = "Plot of 15-minute turbidity data across multiple stations with a threshold at 12 FNU."}
 ggplot(multi_location_ts) +
   geom_line(aes(datetime, value, color = cdec_code)) +
   geom_hline(yintercept = 12, linetype = "dashed") + 
   facet_wrap(~cdec_code, nrow = nrow(multi_location_ts), scales = "free_y") +
-  labs(x = "Datetime", y = param, color = "location")+
+  labs(x = "Datetime", y = param,  title = paste("15-minute", param, "across stations"))+
   theme_bw() +
   theme(strip.text = element_text(size = 12),
         axis.title = element_text(size = 12),
@@ -234,11 +248,9 @@ ggplot(multi_location_ts) +
 
 You can then write data to your local drive. Specify the filepath of interest and customize the filename if desired. 
 
-```{r}
-sta_label <- paste(unique(multi_location_ts$cdec_code), collapse = "-")
+```{r, eval = FALSE}
+loc_label <- paste(unique(multi_location_ts$cdec_code), collapse = "-")
 write.csv(multi_location_daily, 
           here::here(paste0("ts_", param, "_",sta_label,"_",  start_date, "-", end_date)))
 ```
-
-## Combine parameter and location
 
