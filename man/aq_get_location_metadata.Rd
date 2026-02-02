@@ -2,7 +2,7 @@
 % Please edit documentation in R/aq_location_metadata.R
 \name{aq_get_location_metadata}
 \alias{aq_get_location_metadata}
-\title{Get Location Metadata}
+\title{Get location metadata}
 \usage{
 aq_get_location_metadata(
   cdec_code = NULL,

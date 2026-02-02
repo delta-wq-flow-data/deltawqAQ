@@ -1,4 +1,4 @@
-#' @title Get Aquarius Time series
+#' @title Get Aquarius time series
 #'
 #' @description Retrieves time series data from an Aquarius database and optionally downloads and writes the time series.
 #'
@@ -79,7 +79,7 @@ aq_get_ts <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NUL
   return(ts_data)
 }
 
-#' @title Process Aquarius Time series
+#' @title Process Aquarius time series
 #'
 #' @description Processes the time series into a clean data frame after Aquarius database retrieval.
 #'
@@ -159,7 +159,7 @@ aq_process_ts = function(location_code, parameter, query_from, query_to) {
   return(df)
 }
 
-#' @title Get Aquarius Time series for Multiple locations
+#' @title Get Aquarius time series for multiple locations
 #'
 #' @description Retrieves and optionally downloads time series for one parameter at multiple locations
 #'

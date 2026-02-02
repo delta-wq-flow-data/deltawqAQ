@@ -2,7 +2,7 @@
 % Please edit documentation in R/aq_timeseries.R
 \name{aq_get_ts}
 \alias{aq_get_ts}
-\title{Get Aquarius Time series}
+\title{Get Aquarius time series}
 \usage{
 aq_get_ts(
   cdec_code = NULL,

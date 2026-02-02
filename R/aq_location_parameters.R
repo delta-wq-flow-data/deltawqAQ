@@ -1,4 +1,4 @@
-#' @title Get Location Parameters
+#' @title Get location parameters
 #' @description Retrieves a list of all the parameters associated with one or multiple locations.
 #'
 #' @details Retrieves the parameters (IDs, names) and specific time series identifiers associated with queried locations.
@@ -11,9 +11,8 @@
 #' @return A data frame of parameters filtered to queried location(s)
 #'
 #' @examples
-#' params_SJW <- aq_get_location_parameters(cdec_code = "SJW")
-#' params_SJW_MDM_GES <- aq_get_location_parameters(cdec_code = c("SJW", "MDM", "GES"))
-#' param_info <- aq_get_location_parameters(location_id = c("11447903", "11447905", "11447890"))
+#' aq_get_location_parameters(cdec_code = "SJW")
+#' aq_get_location_parameters(location_id = c("11447903", "11447905", "11447890"))
 #'
 #' @export
 aq_get_location_parameters = function(cdec_code=NULL, location_id=NULL, aq_location_id=NULL) {

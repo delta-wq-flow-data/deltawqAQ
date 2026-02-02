@@ -2,7 +2,7 @@
 % Please edit documentation in R/aq_timeseries.R
 \name{aq_process_ts}
 \alias{aq_process_ts}
-\title{Process Aquarius Time series}
+\title{Process Aquarius time series}
 \usage{
 aq_process_ts(location_code, parameter, query_from, query_to)
 }

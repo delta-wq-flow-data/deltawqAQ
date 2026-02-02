@@ -2,7 +2,7 @@
 % Please edit documentation in R/aq_timeseries.R
 \name{aq_get_ts_multi_location}
 \alias{aq_get_ts_multi_location}
-\title{Get Aquarius Time series for Multiple locations}
+\title{Get Aquarius time series for multiple locations}
 \usage{
 aq_get_ts_multi_location(
   cdec_code = NULL,

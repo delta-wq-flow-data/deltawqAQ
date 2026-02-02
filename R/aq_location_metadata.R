@@ -1,4 +1,4 @@
-#' @title Get Location Metadata
+#' @title Get location metadata
 
 #' @description Retrieves metadata from Aquarius database for a selection of locations.
 

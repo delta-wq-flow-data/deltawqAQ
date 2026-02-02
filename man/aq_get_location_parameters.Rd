@@ -2,7 +2,7 @@
 % Please edit documentation in R/aq_location_parameters.R
 \name{aq_get_location_parameters}
 \alias{aq_get_location_parameters}
-\title{Get Location Parameters}
+\title{Get location parameters}
 \usage{
 aq_get_location_parameters(
   cdec_code = NULL,
@@ -28,8 +28,7 @@ Retrieves a list of all the parameters associated with one or multiple locations
 Retrieves the parameters (IDs, names) and specific time series identifiers associated with queried locations.
 }
 \examples{
-params_SJW <- aq_get_location_parameters(cdec_code = "SJW")
-params_SJW_MDM_GES <- aq_get_location_parameters(cdec_code = c("SJW", "MDM", "GES"))
-param_info <- aq_get_location_parameters(location_id = c("11447903", "11447905", "11447890"))
+aq_get_location_parameters(cdec_code = "SJW")
+aq_get_location_parameters(location_id = c("11447903", "11447905", "11447890"))
 
 }
