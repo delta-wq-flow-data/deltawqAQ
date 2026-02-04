@@ -14,7 +14,7 @@ Aquarius API, as called through the aq_get_location_list function
 aq_all_locations
 }
 \description{
-Metadata for all locations in Aquarius database
+Metadata dataset for all locations in Aquarius database. Updated when changes to locations occur.
 }
 \details{
 Aquarius location metadata dataset
