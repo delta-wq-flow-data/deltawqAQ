@@ -167,52 +167,7 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                     }
                                   },
 
-                                  #' Gets the unique ID of a time-series from its identifier string
-                                  #'
-                                  #' If the input string is already a unique ID, the input value is simply returned unmodified.
-                                  #'
-                                  #' @param timeSeriesIdentifier A time-series identifier in <Parameter>.<Label>@<LocationIdentifier> syntax
-                                  #' @return The unique ID of the time-series
-                                  #' @examples
-                                  #' getTimeSeriesUniqueId("Stage.Working@MyLocation") # cdf184928c8249abb872f852f0fa7d01
-                                  getTimeSeriesUniqueId = function(timeSeriesIdentifier) {
-                                    if (isLegacy | !grepl("@", timeSeriesIdentifier)) {
-                                      # It's not in Param.Label@Location format, so just leave it as-is
-                                      timeSeriesIdentifier
-                                    } else {
-                                      # Parse out the location identifier
-                                      location <- .self$getLocationIdentifier(timeSeriesIdentifier)
 
-                                      # Ask for all the time-series at that location
-                                      r <- GET(paste0(publishUri, "/GetTimeSeriesDescriptionList"), query = list(LocationIdentifier = location))
-                                      stop_for_status(r, paste("retrieve time-series at location", location))
-
-                                      # Find the unique ID by matching the full identifier
-                                      j <- fromJSON(content(r, "text"))
-                                      uniqueId <- j$TimeSeries$UniqueId[which(j$TimeSeries$Identifier == timeSeriesIdentifier)]
-
-                                      if (length(uniqueId) <= 0) {
-                                        # Throw on the brakes
-                                        stop("Can't find time-series '", timeSeriesIdentifier, "' in location '", location, "'.")
-                                      }
-
-                                      uniqueId
-                                    }
-                                  },
-
-                                  #' Gets the location identifier from a time series identifier string
-                                  #'
-                                  #' @param timeSeriesIdentifier A time-series identifier in <Parameter>.<Label>@<LocationIdentifier> syntax
-                                  #' @return The identifier of the location
-                                  #' @examples
-                                  #' getLocationIdentifier("Stage.Working@MyLocation") # MyLocation
-                                  getLocationIdentifier = function(timeSeriesIdentifier) {
-                                    if (!grepl("@", timeSeriesIdentifier)) {
-                                      stop(timeSeriesIdentifier, " is not a <Parameter>.<Label>@<Location> time-series identifier")
-                                    }
-
-                                    strsplit(timeSeriesIdentifier, "@")[[1]][[2]]
-                                  },
 
                                   #' Gets location description from the database, including all locations if no locations specified
                                   #'
@@ -245,6 +200,28 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                       GET(paste0(.self$publishUri, "/GetLocationDescriptionList"), query = q)
                                       , paste("get location description list for", locationIdentifier)), "text"))$LocationDescriptions
                                   },
+
+                                  #' Gets the location identifier from a time series identifier string
+                                  #'
+                                  #' @param timeSeriesIdentifier A time-series identifier in <Parameter>.<Label>@<LocationIdentifier> syntax
+                                  #' @return The identifier of the location
+                                  #' @examples
+                                  #' getLocationIdentifier("Stage.Working@MyLocation") # MyLocation
+                                  getLocationIdentifier = function(timeSeriesIdentifier) {
+                                    if (!grepl("@", timeSeriesIdentifier)) {
+                                      stop(timeSeriesIdentifier, " is not a <Parameter>.<Label>@<Location> time-series identifier")
+                                    }
+
+                                    strsplit(timeSeriesIdentifier, "@")[[1]][[2]]
+                                  },
+
+                                  #' Gets location description from the database, including all locations if no locations specified
+                                  #'
+                                  #' @param locationName Location Name (optional)
+                                  #' @return The name, identifier, unique ID of each location, folder, published
+                                  #' @examples
+                                  #' getLocationDescriptions("Stage.Working@MyLocation") # MyLocation
+
 
 
 
@@ -373,54 +350,38 @@ timeseriesClient <- setRefClass("timeseriesClient",
                                       , paste("get location data for", locationIdentifier)), "text"))
                                   },
 
-
-                                  #' Gets field visits
+                                  #' Gets the unique ID of a time-series from its identifier string
                                   #'
-                                  #' Gets field visits activities
+                                  #' If the input string is already a unique ID, the input value is simply returned unmodified.
                                   #'
-                                  #' @param locationIdentifier Optional LocationIdentifier filter
-                                  #' @param queryFrom Optional QueryFrom filter
-                                  #' @param queryTo Optional QueryTo filter
-                                  #' @param activityType Optional DiscreteMeasurementActivity filter
-                                  #' @return The activities performed at the locations during the requested time range
+                                  #' @param timeSeriesIdentifier A time-series identifier in <Parameter>.<Label>@<LocationIdentifier> syntax
+                                  #' @return The unique ID of the time-series
                                   #' @examples
-                                  getFieldVisits = function(locationIdentifier, queryFrom, queryTo, activityType) {
+                                  #' getTimeSeriesUniqueId("Stage.Working@MyLocation") # cdf184928c8249abb872f852f0fa7d01
+                                  getTimeSeriesUniqueId = function(timeSeriesIdentifier) {
+                                    if (isLegacy | !grepl("@", timeSeriesIdentifier)) {
+                                      # It's not in Param.Label@Location format, so just leave it as-is
+                                      timeSeriesIdentifier
+                                    } else {
+                                      # Parse out the location identifier
+                                      location <- .self$getLocationIdentifier(timeSeriesIdentifier)
 
-                                    if (missing(locationIdentifier))  { locationIdentifier = NULL }
-                                    if (missing(queryFrom))           { queryFrom = NULL }
-                                    if (missing(queryTo))             { queryTo = NULL }
-                                    if (missing(activityType))        { activityType = NULL }
+                                      # Ask for all the time-series at that location
+                                      r <- GET(paste0(publishUri, "/GetTimeSeriesDescriptionList"), query = list(LocationIdentifier = location))
+                                      stop_for_status(r, paste("retrieve time-series at location", location))
 
-                                    # Coerce native R dates to an ISO 8601 string
-                                    if (is.double(queryFrom)) { queryFrom <- .self$formatIso8601(queryFrom) }
-                                    if (is.double(queryTo))   { queryTo   <- .self$formatIso8601(queryTo) }
+                                      # Find the unique ID by matching the full identifier
+                                      j <- fromJSON(content(r, "text"))
+                                      uniqueId <- j$TimeSeries$UniqueId[which(j$TimeSeries$Identifier == timeSeriesIdentifier)]
 
-                                    # Build the field visit query
-                                    q <- list(
-                                      LocationIdentifier = locationIdentifier,
-                                      QueryFrom = queryFrom,
-                                      QueryTo = queryTo)
-                                    q <- q[!sapply(q, is.null)]
+                                      if (length(uniqueId) <= 0) {
+                                        # Throw on the brakes
+                                        stop("Can't find time-series '", timeSeriesIdentifier, "' in location '", location, "'.")
+                                      }
 
-                                    # Get the filed visits descriptions for the time period
-                                    visits <- fromJSON(content(stop_for_status(
-                                      GET(paste0(.self$publishUri, "/GetFieldVisitDescriptionList"), query = q)
-                                      , paste("get field visits for", locationIdentifier)), "text"))$FieldVisitDescriptions
-
-                                    # Get the activities performed during those visits
-                                    visitDataRequests <- lapply(visits$Identifier, function(identifier) {
-                                      r <- list(
-                                        FieldVisitIdentifier = identifier,
-                                        DiscreteMeasurementActivity = activityType)
-                                      r <- r[!sapply(r, is.null)]
-                                    })
-
-                                    visitData <- .self$sendBatchRequests(.self$publishUri, "FieldVisitDataServiceRequest", "/GetFieldVisitData", visitDataRequests)
-                                    visits$Details <- visitData
-
-                                    visits
+                                      uniqueId
+                                    }
                                   },
-
 
                                   #' Fetch all requested time-series descriptions matching the filter
                                   #'
