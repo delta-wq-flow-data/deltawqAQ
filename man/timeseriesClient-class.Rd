@@ -24,8 +24,6 @@
 
 \item{utcOffset}{A UTC offset in hours}
 
-\item{activityType}{Optional DiscreteMeasurementActivity filter}
-
 \item{locationIdentifier}{Optional location identifier filter}
 
 \item{parameter}{Optional parameter filter}
@@ -50,11 +48,9 @@
 }
 \value{
 TRUE if the target version is strictly less than the source version
-Gets the unique ID of a time-series from its identifier string
+Gets location description from the database, including all locations if no locations specified
 
-If the input string is already a unique ID, the input value is simply returned unmodified.
-
-The unique ID of the time-series
+The name, identifier, unique ID of each location, folder, published
 
 The identifier of the location
 
@@ -67,7 +63,7 @@ Gets the UTC offset string from a numeric UTC offset hours value
 
 An ISO8601 UTC offset string in +/-HH:MM format
 
-The activities performed at the locations during the requested time range
+The unique ID of the time-series
 
 All the time-series descriptions matching the filters
 Gets time-series points for multiple time-series
@@ -99,7 +95,7 @@ Determines if a target version string is strictly less than a source version
 
 This method takes dotted version strings and compares them by numerical components.
 It safely avoids the errors string comparison, which incorrectly says "3.10.510" > "17.2.123".
-getTimeSeriesUniqueId("Stage.Working@MyLocation") # cdf184928c8249abb872f852f0fa7d01
+getLocationDescriptions("Stage.Working@MyLocation") # MyLocation
 Gets the location identifier from a time series identifier string
 
 getLocationIdentifier("Stage.Working@MyLocation") # MyLocation
@@ -126,10 +122,11 @@ Formats a datetime in ISO 8601 format
 getUtcOffsetText(-8) # "-08:00"
 getUtcOffsetText(2.5) # "+02:30"
 Gets the location data for a location
-Gets field visits
+Gets the unique ID of a time-series from its identifier string
 
-Gets field visits activities
+If the input string is already a unique ID, the input value is simply returned unmodified.
 
+getTimeSeriesUniqueId("Stage.Working@MyLocation") # cdf184928c8249abb872f852f0fa7d01
 Fetch all requested time-series descriptions matching the filter
 
 ## Get the discharge and stage timeseries for 2012
