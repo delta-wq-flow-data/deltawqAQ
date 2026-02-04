@@ -34,7 +34,9 @@ library(DT)
 
 ## Select location
 
-To work with Aquarius data, start by figuring out the location code(s) of interest. Functions will take `cdec_code`, `location_id`, or `aquarius_id`, with most users tending to be most familiar with `cdec_code`. The `aq_all_locations` data object gets generated in the package, and locations should be stable once all locations become telemetered.
+To work with Aquarius data, start by figuring out the location code(s) of interest. Functions will take `cdec_code`, `location_id`, or `aquarius_id`, with most users tending to be most familiar with `cdec_code`. 
+
+Use the `aq_all_locations` data object to view all the available locations. This object gets generated in the package, and locations should be stable once all locations become telemetered.
 
 ```{r}
 DT::datatable(deltawqAQ::aq_all_locations, 
@@ -55,7 +57,7 @@ We have selected the `SJW` location for this example. You will need `parameter_n
 ### Select parameter names
 Now use `aq_get_location_parameters` to figure out the parameter names for your location.
 
-```{r, echo = FALSE}
+```{r}
 DT::datatable(aq_get_location_parameters(cdec_code = location), 
               options = list(scrollX = TRUE, 
                              autoWidth = TRUE))
@@ -83,7 +85,7 @@ multi_param_ts <- aq_get_ts_multi_param(
 print(paste("Parameters with data:", paste(unique(multi_param_ts$parameter_name), collapse = ", ")))
 ```
 
-```{r, echo = FALSE}
+```{r}
 DT::datatable(multi_param_ts, 
               options = list(scrollX = TRUE, 
                              autoWidth = TRUE))
@@ -101,8 +103,8 @@ multi_param_daily <- multi_param_ts %>%
   ungroup()
 ```
 
-```{r, echo = FALSE}
-DT::datatable(multi_param_daily, options = list(scrollX = TRUE, autoWidth = TRUE))
+```{r}
+DT::datatable(multi_param_daily, options = list(scrollX = TRUE))
 ```
 
 
@@ -154,14 +156,14 @@ write.csv(multi_param_daily,
 Once you have picked your locations, take a look at the parameter you would like to query. We have selected several locations for this example. You will need `parameter_name` for your timeseries query.
 
 ```{r}
-locations <- c("GSS", "SMR", "OSJ", "HOL", "OBI", "OH4", "MDM")
+locations <- c("CM7", "CM5", "SJW")
 ```
 
 ### Select parameter names
 
 Now use `aq_get_location_parameters` to figure out the parameter names for your location.
 
-```{r, echo = FALSE}
+```{r}
 DT::datatable(aq_get_location_parameters(cdec_code = locations), 
               options = list(scrollX = TRUE, 
                              autoWidth = TRUE))
@@ -187,7 +189,7 @@ multi_location_ts <- aq_get_ts_multi_location(cdec_code = locations,
 print(paste("locations with data:", paste(unique(multi_location_ts$cdec_code), collapse = ", ")))
 ```
 
-```{r, echo = FALSE}
+```{r}
 DT::datatable(multi_location_ts, options = list(scrollX = TRUE, autoWidth = TRUE))
 ```
 
@@ -202,8 +204,8 @@ multi_location_daily <- multi_location_ts |>
   ungroup()
 ```
 
-```{r, echo = FALSE}
-DT::datatable(multi_location_daily, options = list(scrollX = TRUE, autoWidth = TRUE))
+```{r}
+DT::datatable(multi_location_daily, options = list(scrollX = TRUE))
 ```
 
 

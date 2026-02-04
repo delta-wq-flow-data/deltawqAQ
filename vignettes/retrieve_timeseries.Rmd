@@ -35,9 +35,11 @@ library(DT)
 
 ## Select location
 
-To work with Aquarius data, start by figuring out the location code(s) of interest. Functions will take `cdec_code`, `location_id`, or `aquarius_id`, with most users tending to be most familiar with `cdec_code`. The `aq_all_locations` data object gets generated in the package, and locations should be stable once all locations become telemetered.
+To work with Aquarius data, start by figuring out the location code(s) of interest. Functions will take `cdec_code`, `location_id`, or `aquarius_id`, with most users tending to be most familiar with `cdec_code`. 
 
-```{r, echo = FALSE}
+Use the `aq_all_locations` data object to view all the available locations. This object gets generated in the package, and locations should be stable once all locations become telemetered.
+
+```{r\}
 DT::datatable(deltawqAQ::aq_all_locations, 
               options = list(scrollX = TRUE,
                              order = list(list(1, 'asc')),
@@ -53,7 +55,7 @@ We have selected the `SJW` location for this example. You will need `parameter_n
 param_list <- aq_get_location_parameters(cdec_code = "SJW")
 ```
 
-```{r echo = FALSE}
+```{r}
 DT::datatable(param_list, options = list(scrollX = TRUE, autoWidth = TRUE))
 ```
 
@@ -68,7 +70,7 @@ ts <- aq_get_ts(cdec_code = "SJW",
                 query_to = "2026-02-01 00:00:00")
 ```
 
-```{r, echo = FALSE}
+```{r}
 DT::datatable(ts, options = list(scrollX = TRUE, autoWidth = TRUE))
 ```
 
@@ -83,10 +85,9 @@ ts_daily <- ts |>
   ungroup()
 ```
 
-```{r, echo = FALSE}
+```{r}
 DT::datatable(ts_daily, 
-              options = list(scrollX = TRUE, 
-                                       autoWidth = TRUE))
+              options = list(scrollX = TRUE))
 ```
 
 ## Visualize data
