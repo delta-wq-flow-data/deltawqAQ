@@ -48,6 +48,7 @@ aq_get_location_parameters = function(cdec_code=NULL, location_id=NULL, aq_locat
         label = ts_params$Label,
         unit = ts_params$Unit,
         ts_id = ts_params$Identifier,
+        publish = ts_params$Publish,
         stringsAsFactors = FALSE
       )
     } else {
@@ -68,6 +69,7 @@ aq_get_location_parameters = function(cdec_code=NULL, location_id=NULL, aq_locat
     dplyr::left_join(data_filtered, by = "aq_location_id") |>
     # implement the next row once we have all working time series set up
     # dplyr::filter(grepl(".working", label, fixed = TRUE)) |>
+    dplyr::filter(publish == TRUE) |>
     dplyr::select(cdec_code, location_id, aq_location_name, aq_location_id, parameter_id, parameter_name, unit, label, updated_at)
 
   # Return df
