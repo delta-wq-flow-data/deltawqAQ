@@ -26,6 +26,7 @@ RoxygenNote: 7.3.3
 Suggests: 
     DT,
     knitr,
+    lubridate,
     rmarkdown,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
