@@ -31,32 +31,68 @@ library(ggplot2)
 library(lubridate)
 library(dplyr)
 library(DT)
+library(leaflet)
 ```
 
-## Select location
+To work with Aquarius data, you may want to start with exploring available locations and/or available parameters.
 
-To work with Aquarius data, start by figuring out the location code(s) of interest. Functions will take `cdec_code`, `location_id`, or `aquarius_id`, with most users tending to be most familiar with `cdec_code`. 
+## Start with location
+
+You may start by figuring out the location code(s) of interest. Functions will take `cdec_code`, `location_id`, or `aquarius_id`, with most users tending to be most familiar with `cdec_code`. 
 
 Use the `aq_all_locations` data object to view all the available locations. This object gets generated in the package, and locations should be stable once all locations become telemetered.
 
-```{r\}
+```{r}
 DT::datatable(deltawqAQ::aq_all_locations, 
+              rownames = FALSE,
               options = list(scrollX = TRUE,
                              order = list(list(1, 'asc')),
                              autoWidth = TRUE))
 ```
 
-## Select parameter
+View locations on a map. 
+
+```{r}
+leaflet() %>%
+  addTiles() %>%
+  addMarkers(lng = deltawqAQ::aq_all_locations$longitude, 
+             lat = deltawqAQ::aq_all_locations$latitude, 
+             label = deltawqAQ::aq_all_locations$cdec_code)
+```
+
+### Look at available parameters
 Once you have picked your location, take a look at the parameters you would like to query. The `aq_get_location_parameters` function will connect to the Aquarius database based on your credentials, then retrieve all parameters associated with the location you have selected. 
 
 We have selected the `SJW` location for this example. You will need `parameter_name` for your time series query, so identify the correct value for the next step.
 
 ```{r}
 param_list <- aq_get_location_parameters(cdec_code = "SJW")
+DT::datatable(param_list, 
+              rownames = FALSE,
+              options = list(scrollX = TRUE, autoWidth = TRUE))
 ```
 
+## Start with parameter
+
+Instead of starting with location, you may also start by figuring out the parameter code(s) of interest. 
+
 ```{r}
-DT::datatable(param_list, options = list(scrollX = TRUE, autoWidth = TRUE))
+DT::datatable(deltawqAQ::aq_all_parameters, 
+              rownames= FALSE,
+              options = list(scrollX = TRUE,
+                             order = list(list(1, 'asc'))))
+```
+
+### Look at available locations
+
+From there you can look at which locations have data for your parameter of interest
+
+```{r}
+spc_locations <- aq_get_parameter_locations("Water Temp")
+DT::datatable(spc_locations, 
+              rownames= FALSE,
+              options = list(scrollX = TRUE,
+                             autoWidth = TRUE))
 ```
 
 ## Query data
@@ -71,7 +107,9 @@ ts <- aq_get_ts(cdec_code = "SJW",
 ```
 
 ```{r}
-DT::datatable(ts, options = list(scrollX = TRUE, autoWidth = TRUE))
+DT::datatable(ts, 
+              rownames = FALSE, 
+              options = list(scrollX = TRUE, autoWidth = TRUE))
 ```
 
 ## Summarize data
@@ -87,6 +125,7 @@ ts_daily <- ts |>
 
 ```{r}
 DT::datatable(ts_daily, 
+              rownames = FALSE,
               options = list(scrollX = TRUE))
 ```
 
