@@ -1,6 +1,3 @@
-# Functions for connecting and disconnecting from Aquarius database
-
-# Create private environment for connection token
 .aq_env <- new.env(parent = emptyenv())
 
 #' @title Connect to Aquarius
@@ -34,18 +31,15 @@ aq_connect <- function(server_hostname = NULL,
                        timeout_seconds = 30,
                        force_reconnect = FALSE) {
 
-  # Check if connection already exists
   if (!force_reconnect && aq_is_connected()) {
     cli::cli_alert_info("Already connected to {.aq_env$server}")
     return(invisible(NULL))
   }
 
-  # Get credentials from environment if not provided
   server_hostname <- server_hostname %||% Sys.getenv("AQTS_SERVER")
   username <- username %||% Sys.getenv("AQTS_USERNAME")
   password <- password %||% Sys.getenv("AQTS_PASSWORD")
 
-  # Validate credentials
   if (server_hostname == "" || username == "" || password == "") {
     cli::cli_abort(c(
       "Missing connection credentials",
@@ -54,8 +48,6 @@ aq_connect <- function(server_hostname = NULL,
     ))
   }
 
-
-  # Build and execute auth request with httr2
   req <- httr2::request(server_hostname) |>
     httr2::req_url_path_append("session") |>
     httr2::req_body_json(list(Username = username, EncryptedPassword = password)) |>
@@ -72,10 +64,8 @@ aq_connect <- function(server_hostname = NULL,
     }
   )
 
-  # Extract token from response body (plain text)
   token <- httr2::resp_body_string(resp)
 
-  # Store connection info in package environment
   .aq_env$connected <- TRUE
   .aq_env$server <- server_hostname
   .aq_env$publish_uri <- server_hostname
@@ -99,7 +89,6 @@ aq_connect <- function(server_hostname = NULL,
 #' @examples
 #' aq_disconnect()
 aq_disconnect <- function() {
-  # Check if there's a connection to disconnect
   if (!aq_is_connected()) {
     cli::cli_alert_info("No active AQUARIUS connection to disconnect")
     return(invisible(NULL))
@@ -107,7 +96,6 @@ aq_disconnect <- function() {
 
   cli::cli_alert_info("Disconnecting from AQUARIUS...")
 
-  # Delete session from server
   if (!is.null(.aq_env$publish_uri)) {
     req <- httr2::request(.aq_env$publish_uri) |>
       httr2::req_url_path_append("session") |>
@@ -121,7 +109,6 @@ aq_disconnect <- function() {
     )
   }
 
-  # Clear connection state
   .aq_env$connected <- FALSE
   .aq_env$server <- NULL
   .aq_env$publish_uri <- NULL
@@ -161,7 +148,6 @@ aq_request <- function(url = NULL) {
     httr2::req_headers("X-Authentication-Token" = .aq_env$token)
 }
 
-# Helper function for NULL coalescing
 `%||%` <- function(x, y) {
   if (is.null(x)) y else x
 }
