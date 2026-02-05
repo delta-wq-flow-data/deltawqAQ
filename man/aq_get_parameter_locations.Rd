@@ -10,7 +10,7 @@ aq_get_parameter_locations(param)
 \item{param}{Parameter of interest}
 }
 \value{
-A data frame containing columns for location information
+A data frame containing columns for location information and start and end times of timeseries
 }
 \description{
 Provides a list of locations associated with a queried parameter.
