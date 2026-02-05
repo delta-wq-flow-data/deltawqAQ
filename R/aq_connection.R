@@ -32,7 +32,7 @@ aq_connect <- function(server_hostname = NULL,
                        force_reconnect = FALSE) {
 
   if (!force_reconnect && aq_is_connected()) {
-    cli::cli_alert_info("Already connected to {.aq_env$server}")
+    cli::cli_alert_info("Already connected to {(.aq_env$server)}")
     return(invisible(NULL))
   }
 
@@ -96,10 +96,11 @@ aq_disconnect <- function() {
 
   cli::cli_alert_info("Disconnecting from AQUARIUS...")
 
-  if (!is.null(.aq_env$publish_uri)) {
+  if (!is.null(.aq_env$publish_uri) && !is.null(.aq_env$token)) {
     req <- httr2::request(.aq_env$publish_uri) |>
       httr2::req_url_path_append("session") |>
-      httr2::req_method("DELETE")
+      httr2::req_method("DELETE") |>
+      httr2::req_headers("X-Authentication-Token" = .aq_env$token)
 
     tryCatch(
       httr2::req_perform(req),

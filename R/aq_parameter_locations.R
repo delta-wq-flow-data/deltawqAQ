@@ -15,11 +15,13 @@
 #' @export
 aq_get_parameter_locations <- function(param) {
 
-  # Check connection
   aq_ensure_connection()
 
-  # Get time series descriptions
-  json_ts_des <- timeseries$getTimeSeriesDescriptions() |>
+  resp <- aq_request() |>
+    httr2::req_url_path_append("GetTimeSeriesDescriptionList") |>
+    httr2::req_perform()
+
+  json_ts_des <- httr2::resp_body_json(resp, simplifyVector = TRUE)$TimeSeriesDescriptions |>
     dplyr::select(aq_location_id = LocationIdentifier, parameter_name = Parameter, start_datetime = CorrectedStartTime,
                   end_datetime = CorrectedEndTime, publish = Publish) |>
     dplyr::right_join(deltawqAQ::aq_all_locations |>
