@@ -36,8 +36,7 @@ aq_connect <- function(server_hostname = NULL,
 
   # Check if connection already exists
   if (!force_reconnect && aq_is_connected()) {
-    cli::cli_alert_info("Already connected to AQUARIUS server")
-    cli::cli_alert_success("Server version: {(.aq_env$version)}")
+    cli::cli_alert_info("Already connected to {.aq_env$server}")
     return(invisible(NULL))
   }
 
@@ -55,37 +54,35 @@ aq_connect <- function(server_hostname = NULL,
     ))
   }
 
-  # Attempt connection with error handling
-  tryCatch({
-    # Set HTTP timeout if supported by httr
-    if (timeout_seconds > 0) {
-      httr::set_config(httr::timeout(timeout_seconds))
+
+  # Build and execute auth request with httr2
+  req <- httr2::request(server_hostname) |>
+    httr2::req_url_path_append("session") |>
+    httr2::req_body_json(list(Username = username, EncryptedPassword = password)) |>
+    httr2::req_timeout(timeout_seconds)
+
+  resp <- tryCatch(
+    httr2::req_perform(req),
+    error = function(e) {
+      cli::cli_abort(c(
+        "Failed to connect to AQUARIUS server",
+        "i" = "Server: {server_hostname}",
+        "x" = conditionMessage(e)
+      ))
     }
+  )
 
-    # Connect to Aquarius using timeseries client
-    timeseries$connect(server_hostname, username, password)
+  # Extract token from response body (plain text)
+  token <- httr2::resp_body_string(resp)
 
-    # Store connection info in package environment
-    .aq_env$connected <- TRUE
-    .aq_env$server <- server_hostname
-    .aq_env$version <- timeseries$version
-    .aq_env$connected_at <- Sys.time()
+  # Store connection info in package environment
+  .aq_env$connected <- TRUE
+  .aq_env$server <- server_hostname
+  .aq_env$publish_uri <- server_hostname
+  .aq_env$token <- token
+  .aq_env$connected_at <- Sys.time()
 
-    cli::cli_alert_success("Connected successfully! Server version: {timeseries$version}")
-
-  }, error = function(e) {
-    cli::cli_alert_danger("Failed to connect to AQUARIUS server")
-    cli::cli_alert_info("Server: {server_hostname}")
-    cli::cli_alert_warning("Error message: {conditionMessage(e)}")
-    cli::cli_h2("Troubleshooting tips:")
-    cli::cli_ol(c(
-      "Verify server URL is correct and accessible",
-      "Check username and password in .Renviron",
-      "Ensure you have network access to the server",
-      "Try accessing the server in a web browser"
-    ))
-    cli::cli_abort("Connection failed. Please fix the issues above and try again.")
-  })
+  cli::cli_alert_success("Connected to {server_hostname}")
 
   invisible(NULL)
 }
@@ -108,30 +105,30 @@ aq_disconnect <- function() {
     return(invisible(NULL))
   }
 
-  # Ensure disconnection happens even if there are errors
   cli::cli_alert_info("Disconnecting from AQUARIUS...")
 
-  tryCatch({
-    timeseries$disconnect()
+  # Delete session from server
+  if (!is.null(.aq_env$publish_uri)) {
+    req <- httr2::request(.aq_env$publish_uri) |>
+      httr2::req_url_path_append("session") |>
+      httr2::req_method("DELETE")
 
-    # Clear connection state
-    .aq_env$connected <- FALSE
-    .aq_env$server <- NULL
-    .aq_env$version <- NULL
-    .aq_env$connected_at <- NULL
+    tryCatch(
+      httr2::req_perform(req),
+      error = function(e) {
+        cli::cli_alert_warning("Error during disconnect: {conditionMessage(e)}")
+      }
+    )
+  }
 
-    cli::cli_alert_success("Disconnected successfully")
+  # Clear connection state
+  .aq_env$connected <- FALSE
+  .aq_env$server <- NULL
+  .aq_env$publish_uri <- NULL
+  .aq_env$token <- NULL
+  .aq_env$connected_at <- NULL
 
-  }, error = function(e) {
-    # Still clear the state even if disconnect fails
-    .aq_env$connected <- FALSE
-    .aq_env$server <- NULL
-    .aq_env$version <- NULL
-    .aq_env$connected_at <- NULL
-
-    cli::cli_alert_warning("Warning: Error during disconnect: {conditionMessage(e)}")
-  })
-
+  cli::cli_alert_success("Disconnected")
   invisible(NULL)
 }
 
@@ -148,6 +145,20 @@ aq_ensure_connection <- function() {
     aq_connect()
   }
   invisible(NULL)
+}
+
+#' @title Create authenticated request
+#' @description Creates an httr2 request with the session token header.
+#' @param url The URL for the request (defaults to publish URI)
+#' @return An httr2 request object with X-Authentication-Token header
+#' @keywords internal
+aq_request <- function(url = NULL) {
+  aq_ensure_connection()
+
+  base_url <- url %||% .aq_env$publish_uri
+
+ httr2::request(base_url) |>
+    httr2::req_headers("X-Authentication-Token" = .aq_env$token)
 }
 
 # Helper function for NULL coalescing
