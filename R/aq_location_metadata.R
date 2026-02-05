@@ -91,7 +91,7 @@ aq_get_location_list  <- function() {
       latitude = .x$Latitude,
       longitude = .x$Longitude)) |>
     dplyr::left_join(df, by = "aq_location_id") |>
-    dplyr::select(cdec_code, location_id, location_name, latitude, longitude, aq_location_id, aq_location_name, aq_unique_id, updated_at)
+    dplyr::select(cdec_code, location_id, location_name, latitude, longitude, aq_location_id, aq_location_name, updated_at)
 
   # Return data frame
   return(location_df)
