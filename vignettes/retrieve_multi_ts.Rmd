@@ -179,7 +179,7 @@ Now use `aq_get_parameter_locations` function to figure out the locations that c
 turbidity_locations <- aq_get_parameter_locations("Turbidity, Form Neph")
 DT::datatable(turbidity_locations, 
               rownames = FALSE,
-              ptions = list(scrollX = TRUE, autoWidth = TRUE))
+              options = list(scrollX = TRUE, autoWidth = TRUE))
 ```
 
 Now select your locations from the list. 

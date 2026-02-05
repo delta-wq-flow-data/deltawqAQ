@@ -88,8 +88,8 @@ DT::datatable(deltawqAQ::aq_all_parameters,
 From there you can look at which locations have data for your parameter of interest
 
 ```{r}
-spc_locations <- aq_get_parameter_locations("Water Temp")
-DT::datatable(spc_locations, 
+wt_locations <- aq_get_parameter_locations("Water Temp")
+DT::datatable(wt_locations, 
               rownames= FALSE,
               options = list(scrollX = TRUE,
                              autoWidth = TRUE))
