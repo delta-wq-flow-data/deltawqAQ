@@ -70,7 +70,7 @@ aq_get_location_parameters = function(cdec_code=NULL, location_id=NULL, aq_locat
     # implement the next row once we have all working time series set up
     # dplyr::filter(grepl(".working", label, fixed = TRUE)) |>
     dplyr::filter(publish == TRUE) |>
-    dplyr::select(cdec_code, location_id, aq_location_name, aq_location_id, parameter_id, parameter_name, unit, label, updated_at)
+    dplyr::select(cdec_code, location_id, aq_location_name, aq_location_id, parameter_name, unit, label, updated_at)
 
   # Return df
   return(df)
