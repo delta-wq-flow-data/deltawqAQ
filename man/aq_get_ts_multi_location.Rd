@@ -33,7 +33,7 @@ A data frame of the combined time series for all locations
 Retrieves and optionally downloads time series for one parameter at multiple locations
 }
 \details{
-Retrieves time series data for multiple locations and a single parameter.
+Retrieves time series data for one to multiple locations and a single parameter.
 A list of values for either cdec_code, location_id, or aq_location_id should be provided and identified by the location identifier type.
 }
 \examples{

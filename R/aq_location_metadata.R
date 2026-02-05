@@ -1,3 +1,5 @@
+# Functions for getting location metadata, including list of all locations or filtering locations
+
 #' @title Get location metadata
 
 #' @description Retrieves metadata from Aquarius database for a selection of locations.

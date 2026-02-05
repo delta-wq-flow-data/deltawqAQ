@@ -1,3 +1,5 @@
+# Functions to get time series
+
 #' @title Get Aquarius time series
 #'
 #' @description Retrieves time series data from an Aquarius database and optionally downloads and writes the time series.
@@ -163,7 +165,7 @@ aq_process_ts = function(location_code, parameter, query_from, query_to) {
 #'
 #' @description Retrieves and optionally downloads time series for one parameter at multiple locations
 #'
-#' @details Retrieves time series data for multiple locations and a single parameter.
+#' @details Retrieves time series data for one to multiple locations and a single parameter.
 #' A list of values for either cdec_code, location_id, or aq_location_id should be provided and identified by the location identifier type.
 #'
 #' @param cdec_code List of three-letter location codes matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying
@@ -273,7 +275,7 @@ aq_get_ts_multi_location <- function(cdec_code = NULL, location_id = NULL, aq_lo
 #'
 #' @description Retrieves and optionally downloads time series for multiple parameters at one location
 #'
-#' @details Retrieves time series data for multiple parameters and a single location.
+#' @details Retrieves time series data for one to multiple parameters and a single location.
 #' A single value for either cdec_code, location_id, or aq_location_id should be provided and identified by the location identifier type.
 #' A list of parameters should be provided.
 #'
