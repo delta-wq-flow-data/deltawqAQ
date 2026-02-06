@@ -19,17 +19,17 @@ aq_get_parameter_locations <- function(param) {
 
   resp <- aq_request() |>
     httr2::req_url_path_append("GetTimeSeriesDescriptionList") |>
+    httr2::req_url_query(Publish = "true") |>
     httr2::req_perform()
 
   json_ts_des <- httr2::resp_body_json(resp, simplifyVector = TRUE)$TimeSeriesDescriptions |>
     dplyr::select(aq_location_id = LocationIdentifier, parameter_name = Parameter, start_datetime = CorrectedStartTime,
-                  end_datetime = CorrectedEndTime, publish = Publish) |>
+                  end_datetime = CorrectedEndTime) |>
     dplyr::right_join(deltawqAQ::aq_all_locations |>
                         dplyr::select(aq_location_id, cdec_code, location_id, location_name), by = "aq_location_id") |>
     dplyr::filter(!is.na(start_datetime),
                   !is.na(end_datetime),
-                  parameter_name == param,
-                  publish == TRUE)
+                  parameter_name == param)
 
   # Filter aq_all_parameter_locations data object to the parameter selected and add additional details
   params_filtered <- deltawqAQ::aq_all_parameters |>
