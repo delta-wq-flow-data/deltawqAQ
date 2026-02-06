@@ -14,22 +14,32 @@
 #'
 #' @export
 aq_get_parameter_locations <- function(param) {
-
   aq_ensure_connection()
 
   resp <- aq_request() |>
     httr2::req_url_path_append("GetTimeSeriesDescriptionList") |>
-    httr2::req_url_query(Publish = "true") |>
+    httr2::req_url_query(Parameter = param, Publish = "true") |>
+    httr2::req_error(is_error = ~ FALSE) |> # prevent the request from error when 400 is returned
     httr2::req_perform()
 
-  json_ts_des <- httr2::resp_body_json(resp, simplifyVector = TRUE)$TimeSeriesDescriptions |>
+  body <- httr2::resp_body_json(resp, simplifyVector = TRUE)
+
+  # show useful message when there is an error
+  if (httr2::resp_is_error(resp) || !is.null(body$ResponseStatus)) {
+    msg <- body$ResponseStatus$Message %||% paste("HTTP", httr2::resp_status(resp))
+    cli::cli_abort(c(
+      msg,
+      "i" = "Check {.code deltawqAQ::aq_all_parameters} for valid parameter names"
+    ))
+  }
+
+  json_ts_des <- body$TimeSeriesDescriptions |>
     dplyr::select(aq_location_id = LocationIdentifier, parameter_name = Parameter, start_datetime = CorrectedStartTime,
                   end_datetime = CorrectedEndTime) |>
     dplyr::right_join(deltawqAQ::aq_all_locations |>
                         dplyr::select(aq_location_id, cdec_code, location_id, location_name), by = "aq_location_id") |>
     dplyr::filter(!is.na(start_datetime),
-                  !is.na(end_datetime),
-                  parameter_name == param)
+                  !is.na(end_datetime))
 
   # Filter aq_all_parameter_locations data object to the parameter selected and add additional details
   params_filtered <- deltawqAQ::aq_all_parameters |>
