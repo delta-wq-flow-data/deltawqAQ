@@ -2,6 +2,20 @@
 
 .proxy_url <- "https://ydq2zyq24pdbyptkrm3kjtxuqm0mfwai.lambda-url.us-west-2.on.aws"
 
+#' Check proxy auth server health
+#' @export
+aq_check_proxy_health <- function() {
+  resp <- httr2::request(.proxy_url) |> httr2::req_perform()
+  status_code <- httr2::resp_status(resp)
+  if (status_code == 200) {
+    cli::cli_alert_success("Proxy server is up and healthy")
+    TRUE
+  } else {
+    cli::cli_alert_danger("Proxy server not healthy")
+    FALSE
+  }
+}
+
 #' @title Connect to Aquarius
 #' @description Establishes and stores a connection to the Aquarius database.
 #' @details By default, connects via a secure proxy that manages credentials
@@ -205,9 +219,6 @@ aq_request <- function(url = NULL) {
     httr2::req_headers("X-Authentication-Token" = .aq_env$token)
 }
 
-`%||%` <- function(x, y) {
-  if (is.null(x)) y else x
-}
 
 #' @title Check if connected to Aquarius
 #' @description Checks whether there is an active Aquarius connection.

@@ -16,7 +16,7 @@
 aq_get_parameter_locations <- function(param) {
   aq_ensure_connection()
 
-  resp <- aq_request() |>
+  resp <- aq_request() |> # this will have the auth header already in it
     httr2::req_url_path_append("GetTimeSeriesDescriptionList") |>
     httr2::req_url_query(Parameter = param, Publish = "true") |>
     httr2::req_error(is_error = ~ FALSE) |> # prevent the request from error when 400 is returned
