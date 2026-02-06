@@ -1,14 +1,20 @@
 .aq_env <- new.env(parent = emptyenv())
 
+.proxy_url <- "https://ydq2zyq24pdbyptkrm3kjtxuqm0mfwai.lambda-url.us-west-2.on.aws"
+
 #' @title Connect to Aquarius
 #' @description Establishes and stores a connection to the Aquarius database.
-#' @details Creates a connection that can be reused across
-#' function calls. The connection is stored in a package environment and
-#' remains active until explicitly disconnected or the R session ends.
+#' @details By default, connects via a secure proxy that manages credentials
+#' server-side — no username or password needed. If `username` and `password`
+#' are provided (or set via environment variables), a direct connection to
+#' the Aquarius server is used instead.
 #'
-#' @param server_hostname URL for database. If NULL, uses AQTS_SERVER from environment variables.
-#' @param username Username for database. If NULL, uses AQTS_USERNAME from environment variables.
-#' @param password Password for database. If NULL, uses AQTS_PASSWORD from environment variables.
+#' @param server_hostname URL for database. Only needed for direct connections.
+#'   If NULL, uses AQTS_SERVER from environment variables.
+#' @param username Username for direct database connection (admin use).
+#'   If NULL, uses AQTS_USERNAME from environment variables.
+#' @param password Password for direct database connection (admin use).
+#'   If NULL, uses AQTS_PASSWORD from environment variables.
 #' @param timeout_seconds Number of seconds before connection times out (default: 30)
 #' @param force_reconnect Logical. If TRUE, forces a new connection even if one exists (default: FALSE)
 #'
@@ -16,10 +22,10 @@
 #' @export
 #'
 #' @examples
-#' # Using environment variables
+#' # Default: connect via proxy (no credentials needed)
 #' aq_connect()
 #'
-#' # Explicit credentials
+#' # Direct connection with explicit credentials (admin use)
 #' aq_connect(
 #'   server_hostname = "https://aquarius.example.com",
 #'   username = "user",
@@ -36,15 +42,67 @@ aq_connect <- function(server_hostname = NULL,
     return(invisible(NULL))
   }
 
-  server_hostname <- server_hostname %||% Sys.getenv("AQTS_SERVER")
-  username <- username %||% Sys.getenv("AQTS_USERNAME")
-  password <- password %||% Sys.getenv("AQTS_PASSWORD")
+  username <- username %||% Sys.getenv("AQTS_USERNAME", unset = "")
+  password <- password %||% Sys.getenv("AQTS_PASSWORD", unset = "")
 
-  if (server_hostname == "" || username == "" || password == "") {
+  if (username != "" && password != "") {
+    aq_connect_direct(
+      server_hostname = server_hostname %||% Sys.getenv("AQTS_SERVER"),
+      username = username,
+      password = password,
+      timeout_seconds = timeout_seconds
+    )
+  } else {
+    aq_connect_proxy(timeout_seconds = timeout_seconds)
+  }
+
+  invisible(NULL)
+}
+
+#' @title Connect via proxy
+#' @description Connects to Aquarius via the secure proxy (no credentials needed).
+#' @param timeout_seconds Number of seconds before connection times out
+#' @return Invisible NULL
+#' @keywords internal
+aq_connect_proxy <- function(timeout_seconds = 30) {
+  req <- httr2::request(.proxy_url) |>
+    httr2::req_url_path_append("token") |>
+    httr2::req_timeout(timeout_seconds)
+
+  resp <- tryCatch(
+    httr2::req_perform(req),
+    error = function(e) {
+      cli::cli_abort(c(
+        "Failed to connect via proxy",
+        "x" = conditionMessage(e)
+      ))
+    }
+  )
+
+  body <- httr2::resp_body_json(resp)
+
+  .aq_env$connected <- TRUE
+  .aq_env$server <- body$server
+  .aq_env$publish_uri <- body$server
+  .aq_env$token <- body$token
+  .aq_env$connected_at <- Sys.time()
+
+  cli::cli_alert_success("Connected to AQTS Server")
+}
+
+#' @title Connect directly to Aquarius
+#' @description Connects directly to Aquarius with explicit credentials (admin use).
+#' @param server_hostname URL for database
+#' @param username Username for database
+#' @param password Password for database
+#' @param timeout_seconds Number of seconds before connection times out
+#' @return Invisible NULL
+#' @keywords internal
+aq_connect_direct <- function(server_hostname, username, password, timeout_seconds = 30) {
+  if (server_hostname == "") {
     cli::cli_abort(c(
-      "Missing connection credentials",
-      "i" = "Provide server_hostname, username, and password as arguments",
-      "i" = "Or set AQTS_SERVER, AQTS_USERNAME, and AQTS_PASSWORD environment variables"
+      "Missing server hostname for direct connection",
+      "i" = "Provide server_hostname or set AQTS_SERVER environment variable"
     ))
   }
 
@@ -72,9 +130,7 @@ aq_connect <- function(server_hostname = NULL,
   .aq_env$token <- token
   .aq_env$connected_at <- Sys.time()
 
-  cli::cli_alert_success("Connected to {server_hostname}")
-
-  invisible(NULL)
+  cli::cli_alert_success("Connected to AQTS Server")
 }
 
 #' @title Disconnect from Aquarius database

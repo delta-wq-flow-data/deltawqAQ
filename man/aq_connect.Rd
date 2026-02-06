@@ -13,11 +13,14 @@ aq_connect(
 )
 }
 \arguments{
-\item{server_hostname}{URL for database. If NULL, uses AQTS_SERVER from environment variables.}
+\item{server_hostname}{URL for database. Only needed for direct connections.
+If NULL, uses AQTS_SERVER from environment variables.}
 
-\item{username}{Username for database. If NULL, uses AQTS_USERNAME from environment variables.}
+\item{username}{Username for direct database connection (admin use).
+If NULL, uses AQTS_USERNAME from environment variables.}
 
-\item{password}{Password for database. If NULL, uses AQTS_PASSWORD from environment variables.}
+\item{password}{Password for direct database connection (admin use).
+If NULL, uses AQTS_PASSWORD from environment variables.}
 
 \item{timeout_seconds}{Number of seconds before connection times out (default: 30)}
 
@@ -30,15 +33,16 @@ Invisible NULL (connection stored in package environment)
 Establishes and stores a connection to the Aquarius database.
 }
 \details{
-Creates a connection that can be reused across
-function calls. The connection is stored in a package environment and
-remains active until explicitly disconnected or the R session ends.
+By default, connects via a secure proxy that manages credentials
+server-side — no username or password needed. If `username` and `password`
+are provided (or set via environment variables), a direct connection to
+the Aquarius server is used instead.
 }
 \examples{
-# Using environment variables
+# Default: connect via proxy (no credentials needed)
 aq_connect()
 
-# Explicit credentials
+# Direct connection with explicit credentials (admin use)
 aq_connect(
   server_hostname = "https://aquarius.example.com",
   username = "user",
