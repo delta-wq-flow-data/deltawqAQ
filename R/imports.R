@@ -20,4 +20,6 @@
 #'   cli_ol
 #' @importFrom jsonlite
 #'   fromJSON
+#' @importFrom rlang
+#'   `%||%`
 NULL
