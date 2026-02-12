@@ -29,6 +29,5 @@ Retrieves the parameters (IDs, names) and specific time series identifiers assoc
 }
 \examples{
 aq_get_location_parameters(cdec_code = "SJW")
-aq_get_location_parameters(location_id = c("11447903", "11447905", "11447890"))
 
 }

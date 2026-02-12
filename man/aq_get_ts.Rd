@@ -6,25 +6,25 @@
 \usage{
 aq_get_ts(
   cdec_code = NULL,
-  location_id = NULL,
-  aq_location_id = NULL,
   parameter,
   query_from,
-  query_to
+  query_to,
+  location_id = NULL,
+  aq_location_id = NULL
 )
 }
 \arguments{
 \item{cdec_code}{Three-letter location code matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying}
-
-\item{location_id}{Numeric identifier for location; one option for querying}
-
-\item{aq_location_id}{Location identifier as displayed in Aquarius database; one option for querying}
 
 \item{parameter}{Parameter name}
 
 \item{query_from}{Start datetime for query; also accepts date}
 
 \item{query_to}{End datetime for query; also accepts date}
+
+\item{location_id}{Numeric identifier for location; one option for querying}
+
+\item{aq_location_id}{Location identifier as displayed in Aquarius database; one option for querying}
 }
 \value{
 A data frame containing the time series values and associated metadata.
