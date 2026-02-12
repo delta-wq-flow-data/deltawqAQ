@@ -19,3 +19,10 @@ to locations of interest.
 \examples{
 all_locations <- aq_get_location_list()
 }
+\seealso{
+Other Retrieve metadata: 
+\code{\link{aq_get_location_metadata}()},
+\code{\link{aq_get_location_parameters}()},
+\code{\link{aq_get_parameter_locations}()}
+}
+\concept{Retrieve metadata}

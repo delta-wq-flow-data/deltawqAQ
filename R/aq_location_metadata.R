@@ -9,7 +9,7 @@
 #' @param cdec_code Three-letter location code matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying
 #' @param location_id Numeric identifier for location; one option for querying
 #' @param aq_location_id Location identifier as displayed in Aquarius database; one option for querying
-
+#' @family Retrieve metadata
 #' @return A data frame of 9 columns, with each row displaying metadata for one location, based on queried locations.
 #'
 #' @examples
@@ -52,7 +52,7 @@ aq_get_location_metadata = function(cdec_code = NULL, location_id = NULL, aq_loc
 #' @examples
 #' all_locations <- aq_get_location_list()
 
-
+#' @family Retrieve metadata
 #' @export
 aq_get_location_list  <- function() {
 

@@ -30,3 +30,10 @@ This function retrieves metadata for all the locations, then filters to location
 SJW_metadata <- aq_get_location_metadata(cdec_code = "SJW")
 aq_get_location_metadata(location_id = "11447903")
 }
+\seealso{
+Other Retrieve metadata: 
+\code{\link{aq_get_location_list}()},
+\code{\link{aq_get_location_parameters}()},
+\code{\link{aq_get_parameter_locations}()}
+}
+\concept{Retrieve metadata}
