@@ -59,9 +59,15 @@ aq_get_location_list  <- function() {
   # Check connection
   aq_ensure_connection()
 
-  # Location description call provides list of all locations if no parameters are called;
-  # otherwise filters to selected stations(s)
-  json_locations <- timeseries$getLocationsDescriptions()
+  resp <- aq_request() |>
+    httr2::req_url_path_append("GetLocationDescriptionList") |>
+    httr2::req_url_query() |>
+    httr2::req_error(is_error = ~ FALSE) |>
+    httr2::req_perform()
+
+  body <- httr2::resp_body_json(resp, simplifyVector = TRUE)
+
+  json_locations <- body$LocationDescriptions
 
   # Check if we got any data
   if (length(json_locations$Name) == 0) {
@@ -69,33 +75,38 @@ aq_get_location_list  <- function() {
     cli::cli_abort("No data retrieved.")
   }
 
-  # Create data frame for useful location information
-  df <- data.frame(
-    aq_location_id = json_locations$Identifier,
-    aq_location_name = json_locations$Name,
-    aq_unique_id = json_locations$UniqueId,
-    updated_at = json_locations$LastModified,
-    stringsAsFactors = FALSE
-  ) |>
+  df <- json_locations |>
+    dplyr::select(
+      aq_location_id = Identifier,
+      aq_location_name = Name,
+      aq_unique_id = UniqueId,
+      updated_at = LastModified) |>
     dplyr::filter(grepl("_", aq_location_id)) |>
     tidyr::separate(col = aq_location_id, into = c("location_id", "cdec_code"), sep = "_", remove = FALSE) |>
     tidyr::separate(col = aq_location_name, into = c("cdec", "location_name"), sep = " - ", remove = FALSE ) |>
     dplyr::mutate(cdec_code = toupper(substr(cdec_code, 1, 3)))
 
-  # Get latitude and longitude for stations
-  json_location_data <- lapply(df$aq_location_id, timeseries$getLocationData)
+  json_location_data <- purrr::map_df(df$aq_location_id, function(id)  {
+    # get lat/lon
+    resp_latlon <- aq_request() |>
+    httr2::req_url_path_append("GetLocationData") |>
+    httr2::req_url_query(LocationIdentifier = id) |>
+    httr2::req_error(is_error = ~ FALSE) |>
+    httr2::req_perform()
 
-  # Pull out relevant information
-  location_df <- purrr::map_df(
-    json_location_data,
-    ~ data.frame(
-      aq_location_id = .x$Identifier,
-      latitude = .x$Latitude,
-      longitude = .x$Longitude)) |>
+    body_latlon <- httr2::resp_body_json(resp_latlon, simplifyVector = TRUE)
+    data.frame(
+      aq_location_id = body_latlon$Identifier,
+      latitude       = body_latlon$Latitude,
+      longitude      = body_latlon$Longitude
+    )
+
+  }) |>
+    # combine with rest of location information
     dplyr::left_join(df, by = "aq_location_id") |>
     dplyr::select(cdec_code, location_id, location_name, latitude, longitude, aq_location_id, aq_location_name, updated_at)
 
   # Return data frame
-  return(location_df)
+  return(json_location_data)
 
 }
