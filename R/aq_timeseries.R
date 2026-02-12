@@ -32,8 +32,11 @@
 #'
 #' @export
 
-aq_get_ts <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NULL,
-                      parameter, query_from, query_to) {
+aq_get_ts <- function(cdec_code = NULL,
+                      parameter,
+                      query_from, query_to,
+                      location_id = NULL,
+                      aq_location_id = NULL) {
 
   # Check connection
   aq_ensure_connection()
@@ -41,13 +44,16 @@ aq_get_ts <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NUL
   # Looks for either cdec code, location_id, or aq_location_id within all locations
 
   if (!is.null(cdec_code)) {
-    data_filtered <- deltawqAQ::aq_all_locations |> dplyr::filter(cdec_code %in% .env$cdec_code)
+    data_filtered <- deltawqAQ::aq_all_locations |>
+      dplyr::filter(cdec_code %in% .env$cdec_code)
   }
   if (!is.null(location_id)) {
-    data_filtered <- deltawqAQ::aq_all_locations |> dplyr::filter(location_id %in% .env$location_id)
+    data_filtered <- deltawqAQ::aq_all_locations |>
+      dplyr::filter(location_id %in% .env$location_id)
   }
   if (!is.null(aq_location_id)) {
-    data_filtered <- deltawqAQ::aq_all_locations |> dplyr::filter(aq_location_id %in% .env$aq_location_id)
+    data_filtered <- deltawqAQ::aq_all_locations |>
+      dplyr::filter(aq_location_id %in% .env$aq_location_id)
   }
 
   # Right after data_filtered
@@ -99,58 +105,61 @@ aq_process_ts = function(location_code, parameter, query_from, query_to) {
   filtered_params <- aq_get_location_parameters(aq_location_id = location_code)
 
   # Filter to the specific parameter requested
-  param_info <- filtered_params |>
-    dplyr::filter(parameter_name == parameter)
+  # param_info <- filtered_params |>
+  #   dplyr::filter(parameter_name == parameter)
 
-  if (nrow(param_info) == 0) {
+  if (nrow(filtered_params) == 0) {
     cli::cli_abort("Parameter '{parameter}' not found for location {location_code}")
   }
 
   # Use the first label if multiple exist
-  label <- param_info$label[1]
+  # label <- param_info$label[1]
 
   # Get the time series ID
   # AQUARIUS uses the format: Parameter.Label@LocationIdentifier
-  timeseries_id <- paste0(parameter, ".", label, "@", location_code)
-  cli::cli_alert_info(c(
-    "Requesting time-series: {timeseries_id} ",
-    "Time range: {query_from} to {query_to}"
-  ))
+  timeseries_id <- deltawqAQ::aq_parameter_location_crosswalk |>
+    dplyr::filter(parameter_name %in% parameter,
+                  aq_location_id %in% location_code) |>
+    dplyr::pull(ts_unique_id)
 
-  ## Get the JSON form of the data
-  cli::cli_alert_info("Fetching data...")
-  json_data <- timeseries$getTimeSeriesData(
-    timeSeriesIds = timeseries_id,
-    queryFrom = query_from,
-    queryTo = query_to
-  )
+  ## Get the data
+  resp <- aq_request() |>
+    httr2::req_url_path_append("GetTimeSeriesData") |>
+    httr2::req_url_query(TimeSeriesUniqueIds = timeseries_id,
+                         queryFrom = query_from,
+                         queryTo = query_to) |>
+    httr2::req_error(is_error = ~ FALSE) |>
+    httr2::req_perform()
 
   ## Process data
-  # Extract points from the JSON response
-  points <- json_data$Points
+  # Extract data from the JSON response
+  resp_points <- httr2::resp_body_json(resp, simplifyVector = TRUE)
+  points <- resp_points$Points
+
+  resp_ts <- httr2::resp_body_json(resp, simplifyVector = TRUE)
+  ts_info <- resp_ts$TimeSeries
 
   # Check if we got any data
-  if (nrow(points) == 0) {
-    cli::cli_alert_warning("No data found for the specified time range")
-    cli::cli_abort("No data retrieved.")
+  if (httr2::resp_is_error(resp) || !is.null(points$ResponseStatus)) {
+    msg <- points$ResponseStatus$Message %||% paste("HTTP", httr2::resp_status(resp))
+    cli::cli_abort(c(
+      msg,
+      "i" = "Check {.code deltawqAQ::aq_all_parameters} and {.code deltawqAQ::aq_all_locations}
+      for valid parameter and location names"
+    ))
   }
 
   cli::cli_alert_success("Retrieved {nrow(points)} data points")
 
   # Convert timestamps to POSIXct format for easier handling
   # parseIso8601 automatically handles any timezone offset in the ISO 8601 string
-  points$DateTime <- sapply(points$Timestamp, timeseries$parseIso8601)
-  points$DateTime <- as.POSIXct(points$DateTime, origin = "1970-01-01")
-
-
-  # get time series info
-  ts_info <- json_data$TimeSeries
+  points$Datetime <- lubridate::ymd_hms(points$Timestamp)
 
   # Create clean data frame
   df <- data.frame(
-    datetime = points$DateTime,
+    datetime = points$Datetime,
     value = points$NumericValue1,
-    aq_location_id = location_code[1],
+    aq_location_id = ts_info$LocationIdentifier[1],
     parameter_name = ts_info$Parameter[1],
     label = ts_info$Label[1],
     unit = ts_info$Unit[1],
@@ -193,8 +202,11 @@ aq_process_ts = function(location_code, parameter, query_from, query_to) {
 #'   }
 #'
 #'@export
-aq_get_ts_multi_location <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NULL,
-                                    parameter, query_from, query_to) {
+aq_get_ts_multi_location <- function(cdec_code = NULL,
+                                    parameter,
+                                    query_from, query_to,
+                                    location_id = NULL,
+                                    aq_location_id = NULL) {
 
   # Check connection
   aq_ensure_connection()
@@ -202,13 +214,16 @@ aq_get_ts_multi_location <- function(cdec_code = NULL, location_id = NULL, aq_lo
   # Looks for either cdec code, location_id, or aq_location_id within all locations
 
   if (!is.null(cdec_code)) {
-    data_filtered <- deltawqAQ::aq_all_locations |> dplyr::filter(cdec_code %in% .env$cdec_code)
+    data_filtered <- deltawqAQ::aq_all_locations |>
+      dplyr::filter(cdec_code %in% .env$cdec_code)
   }
   if (!is.null(location_id)) {
-    data_filtered <- deltawqAQ::aq_all_locations |> dplyr::filter(location_id %in% .env$location_id)
+    data_filtered <- deltawqAQ::aq_all_locations |>
+      dplyr::filter(location_id %in% .env$location_id)
   }
   if (!is.null(aq_location_id)) {
-    data_filtered <- deltawqAQ::aq_all_locations |> dplyr::filter(aq_location_id %in% .env$aq_location_id)
+    data_filtered <- deltawqAQ::aq_all_locations |>
+      dplyr::filter(aq_location_id %in% .env$aq_location_id)
   }
 
   # Check if any locations were found
@@ -304,8 +319,11 @@ aq_get_ts_multi_location <- function(cdec_code = NULL, location_id = NULL, aq_lo
 #' }
 #'
 #' @export
-aq_get_ts_multi_param <- function(cdec_code = NULL, location_id = NULL, aq_location_id = NULL,
-                                  parameter, query_from, query_to){
+aq_get_ts_multi_param <- function(cdec_code = NULL,
+                                  parameter,
+                                  query_from, query_to,
+                                  location_id = NULL,
+                                  aq_location_id = NULL){
 
    # Check connection
   aq_ensure_connection()
