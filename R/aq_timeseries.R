@@ -104,19 +104,11 @@ aq_process_ts = function(location_code, parameter, query_from, query_to) {
 
   filtered_params <- aq_get_location_parameters(aq_location_id = location_code)
 
-  # Filter to the specific parameter requested
-  # param_info <- filtered_params |>
-  #   dplyr::filter(parameter_name == parameter)
-
   if (nrow(filtered_params) == 0) {
     cli::cli_abort("Parameter '{parameter}' not found for location {location_code}")
   }
 
-  # Use the first label if multiple exist
-  # label <- param_info$label[1]
-
-  # Get the time series ID
-  # AQUARIUS uses the format: Parameter.Label@LocationIdentifier
+  # Get the time series ID using the crosswalk
   timeseries_id <- deltawqAQ::aq_parameter_location_crosswalk |>
     dplyr::filter(parameter_name %in% parameter,
                   aq_location_id %in% location_code) |>
@@ -131,8 +123,6 @@ aq_process_ts = function(location_code, parameter, query_from, query_to) {
     httr2::req_error(is_error = ~ FALSE) |>
     httr2::req_perform()
 
-  ## Process data
-  # Extract data from the JSON response
   resp_points <- httr2::resp_body_json(resp, simplifyVector = TRUE)
   points <- resp_points$Points
 
@@ -151,8 +141,7 @@ aq_process_ts = function(location_code, parameter, query_from, query_to) {
 
   cli::cli_alert_success("Retrieved {nrow(points)} data points")
 
-  # Convert timestamps to POSIXct format for easier handling
-  # parseIso8601 automatically handles any timezone offset in the ISO 8601 string
+  # Convert timestamps to work in ggplot
   points$Datetime <- lubridate::ymd_hms(points$Timestamp)
 
   # Create clean data frame
@@ -405,7 +394,5 @@ aq_get_ts_multi_param <- function(cdec_code = NULL,
 
   # Return data
     return(all_ts_data)
-
-
 
 }
