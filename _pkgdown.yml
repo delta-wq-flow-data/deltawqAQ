@@ -5,3 +5,34 @@ template:
 home:
   title: deltaWQAQ
 
+reference:
+  - title: "Aquarius database connections"
+    desc: "Functions related to connecting, disconnecting, checking connections to Aquarius database"
+    contents:
+      - aq_connect
+      - aq_disconnect
+      - aq_check_proxy_health
+      - aq_is_connected
+
+  - title: "Time series Retrieval"
+    desc: "Functions and helper functions to retrieve time series data"
+    contents:
+      - aq_get_ts
+      - aq_get_ts_multi_location
+      - aq_get_ts_multi_param
+      - aq_process_ts
+
+  - title: "Retrieve metadata"
+    desc: "Functions to receive metadata on locations and parameters"
+    contents:
+      - aq_get_location_list
+      - aq_get_location_metadata
+      - aq_get_location_parameters
+      - aq_get_parameter_locations
+
+  - title: "Metadata"
+    desc: "Reference list for locations and parameters"
+    contents:
+      - aq_all_locations
+      - aq_all_parameters
+      - aq_parameter_location_crosswalk
