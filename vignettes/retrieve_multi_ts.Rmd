@@ -43,7 +43,7 @@ Use the `aq_all_locations` data object to view all the available locations. This
 DT::datatable(deltawqAQ::aq_all_locations, 
               rownames = FALSE,
               options = list(scrollX = TRUE,
-                             order = list(list(1, 'asc')),
+                             order = list(list(0, 'asc')),
                              autoWidth = TRUE))
 ```
 
@@ -133,10 +133,10 @@ ggplot(multi_param_daily) +
 ```
 
 #### 15 minute data
-```{r, fig.height = 7, fig.width = 6, fig.alt = "Plot of 15-minute values across different parameters at San Joaquin West (SJW)"}
+```{r, fig.height = 7, fig.width = 6, message = FALSE, warning = FALSE, fig.alt = "Plot of 15-minute values across different parameters at San Joaquin West (SJW)"}
 ggplot(multi_param_ts) +
   geom_line(aes(datetime, value, color = parameter_name)) +
-  facet_wrap(~parameter_name, nrow = nrow(multi_param_ts), scales = "free_y") +
+  facet_wrap(~parameter_name, nrow = length(unique(multi_param_ts$parameter_name)), scales = "free_y") +
   labs(x = "Datetime", y = "Value", title = paste("15-minute Water Quality for", location))+
   theme_bw() +
   theme(strip.text = element_text(size = 12),
@@ -256,7 +256,7 @@ ggplot(multi_location_daily) +
 
 Include a threshold line if useful.
 
-```{r, fig.height = 7, fig.width = 6, fig.alt = "Plot of 15-minute turbidity data across multiple stations with a threshold at 12 FNU."}
+```{r, message = FALSE, warning = FALSE, fig.height = 7, fig.width = 6, fig.alt = "Plot of 15-minute turbidity data across multiple stations with a threshold at 12 FNU."}
 ggplot(multi_location_ts) +
   geom_line(aes(datetime, value, color = cdec_code)) +
   geom_hline(yintercept = 12, linetype = "dashed") + 
