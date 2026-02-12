@@ -2,7 +2,11 @@
 
 .proxy_url <- "https://ydq2zyq24pdbyptkrm3kjtxuqm0mfwai.lambda-url.us-west-2.on.aws"
 
-#' Check proxy auth server health
+#' @title Check proxy authenticator server's health
+#' @description Check proxy server health
+#' @details Provides message if proxy server is not healthy
+#'
+#' @family Aquarius database connections
 #' @export
 aq_check_proxy_health <- function() {
   resp <- httr2::request(.proxy_url) |> httr2::req_perform()
@@ -33,6 +37,7 @@ aq_check_proxy_health <- function() {
 #' @param force_reconnect Logical. If TRUE, forces a new connection even if one exists (default: FALSE)
 #'
 #' @return Invisible NULL (connection stored in package environment)
+#' @family Aquarius database connections
 #' @export
 #'
 #' @examples
@@ -77,6 +82,7 @@ aq_connect <- function(server_hostname = NULL,
 #' @description Connects to Aquarius via the secure proxy (no credentials needed).
 #' @param timeout_seconds Number of seconds before connection times out
 #' @return Invisible NULL
+#' @family Aquarius database connections
 #' @keywords internal
 aq_connect_proxy <- function(timeout_seconds = 30) {
   req <- httr2::request(.proxy_url) |>
@@ -111,6 +117,7 @@ aq_connect_proxy <- function(timeout_seconds = 30) {
 #' @param password Password for database
 #' @param timeout_seconds Number of seconds before connection times out
 #' @return Invisible NULL
+#' @family Aquarius database connections
 #' @keywords internal
 aq_connect_direct <- function(server_hostname, username, password, timeout_seconds = 30) {
   if (server_hostname == "") {
@@ -154,6 +161,7 @@ aq_connect_direct <- function(server_hostname, username, password, timeout_secon
 #' again before using other package functions.
 #'
 #' @return Invisible NULL
+#' @family Aquarius database connections
 #' @export
 #'
 #' @examples
@@ -196,6 +204,7 @@ aq_disconnect <- function() {
 #' It's designed to be called by other package functions that need a connection.
 #'
 #' @return Invisible NULL (throws error if connection cannot be established)
+#' @family Aquarius database connections
 #' @keywords internal
 aq_ensure_connection <- function() {
   if (!aq_is_connected()) {
@@ -209,6 +218,7 @@ aq_ensure_connection <- function() {
 #' @description Creates an httr2 request with the session token header.
 #' @param url The URL for the request (defaults to publish URI)
 #' @return An httr2 request object with X-Authentication-Token header
+#' @family Aquarius database connections
 #' @keywords internal
 aq_request <- function(url = NULL) {
   aq_ensure_connection()
@@ -227,6 +237,7 @@ aq_request <- function(url = NULL) {
 #' the connection is still active on the server side.
 #'
 #' @return Logical indicating whether there is an active connection
+#' @family Aquarius database connections
 #' @export
 #'
 #' @examples

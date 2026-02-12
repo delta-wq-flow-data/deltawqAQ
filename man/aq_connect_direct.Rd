@@ -21,4 +21,15 @@ Invisible NULL
 \description{
 Connects directly to Aquarius with explicit credentials (admin use).
 }
+\seealso{
+Other Aquarius database connections: 
+\code{\link{aq_check_proxy_health}()},
+\code{\link{aq_connect}()},
+\code{\link{aq_connect_proxy}()},
+\code{\link{aq_disconnect}()},
+\code{\link{aq_ensure_connection}()},
+\code{\link{aq_is_connected}()},
+\code{\link{aq_request}()}
+}
+\concept{Aquarius database connections}
 \keyword{internal}

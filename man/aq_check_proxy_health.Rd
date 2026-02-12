@@ -2,10 +2,24 @@
 % Please edit documentation in R/aq_connection.R
 \name{aq_check_proxy_health}
 \alias{aq_check_proxy_health}
-\title{Check proxy auth server health}
+\title{Check proxy authenticator server's health}
 \usage{
 aq_check_proxy_health()
 }
 \description{
-Check proxy auth server health
+Check proxy server health
 }
+\details{
+Provides message if proxy server is not healthy
+}
+\seealso{
+Other Aquarius database connections: 
+\code{\link{aq_connect}()},
+\code{\link{aq_connect_direct}()},
+\code{\link{aq_connect_proxy}()},
+\code{\link{aq_disconnect}()},
+\code{\link{aq_ensure_connection}()},
+\code{\link{aq_is_connected}()},
+\code{\link{aq_request}()}
+}
+\concept{Aquarius database connections}

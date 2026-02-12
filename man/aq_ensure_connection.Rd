@@ -16,4 +16,15 @@ Internal helper function to ensure connection exists before operations.
 Checks if a connection exists and creates one if needed.
 It's designed to be called by other package functions that need a connection.
 }
+\seealso{
+Other Aquarius database connections: 
+\code{\link{aq_check_proxy_health}()},
+\code{\link{aq_connect}()},
+\code{\link{aq_connect_direct}()},
+\code{\link{aq_connect_proxy}()},
+\code{\link{aq_disconnect}()},
+\code{\link{aq_is_connected}()},
+\code{\link{aq_request}()}
+}
+\concept{Aquarius database connections}
 \keyword{internal}
