@@ -19,4 +19,10 @@ Metadata dataset for all locations in Aquarius database. Updated when changes to
 \details{
 Aquarius location metadata dataset
 }
+\seealso{
+Other Metadata: 
+\code{\link{aq_all_parameters}},
+\code{\link{aq_parameter_location_crosswalk}}
+}
+\concept{Metadata}
 \keyword{datasets}

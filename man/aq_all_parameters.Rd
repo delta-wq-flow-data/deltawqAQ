@@ -19,4 +19,10 @@ List of parameter names for querying
 \details{
 Aquarius parameter list
 }
+\seealso{
+Other Metadata: 
+\code{\link{aq_all_locations}},
+\code{\link{aq_parameter_location_crosswalk}}
+}
+\concept{Metadata}
 \keyword{datasets}

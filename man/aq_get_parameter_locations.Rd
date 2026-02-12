@@ -21,5 +21,11 @@ Exactly one parameter name should be provided.
 }
 \examples{
 aq_get_parameter_locations("Water Temp")
-
 }
+\seealso{
+Other Retrieve metadata: 
+\code{\link{aq_get_location_list}()},
+\code{\link{aq_get_location_metadata}()},
+\code{\link{aq_get_location_parameters}()}
+}
+\concept{Retrieve metadata}

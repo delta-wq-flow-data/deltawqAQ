@@ -29,7 +29,7 @@
 #'  query_to = lubridate::now()
 #'  )
 #'  }
-#'
+#' @family Retrieve time series
 #' @export
 
 aq_get_ts <- function(cdec_code = NULL,
@@ -98,7 +98,7 @@ aq_get_ts <- function(cdec_code = NULL,
 #' @param parameter Parameter name from Aquarius
 #' @param query_from Start datetime for query; also accepts date
 #' @param query_to End datetime for query; also accepts date
-#'
+#' @family Retrieve time series
 #' @return A data frame with 7 columns that will be further modified in get_ts functions
 aq_process_ts = function(location_code, parameter, query_from, query_to) {
 
@@ -200,8 +200,8 @@ aq_process_ts = function(location_code, parameter, query_from, query_to) {
 #'   query_to = lubridate::now()
 #'   )
 #'   }
-#'
-#'@export
+#' @family Retrieve time series
+#' @export
 aq_get_ts_multi_location <- function(cdec_code = NULL,
                                     parameter,
                                     query_from, query_to,
@@ -317,7 +317,7 @@ aq_get_ts_multi_location <- function(cdec_code = NULL,
 #'   query_to = lubridate::now()
 #'   )
 #' }
-#'
+#' @family Retrieve time series
 #' @export
 aq_get_ts_multi_param <- function(cdec_code = NULL,
                                   parameter,

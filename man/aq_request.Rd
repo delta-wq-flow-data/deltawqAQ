@@ -15,4 +15,15 @@ An httr2 request object with X-Authentication-Token header
 \description{
 Creates an httr2 request with the session token header.
 }
+\seealso{
+Other Aquarius database connections: 
+\code{\link{aq_check_proxy_health}()},
+\code{\link{aq_connect}()},
+\code{\link{aq_connect_direct}()},
+\code{\link{aq_connect_proxy}()},
+\code{\link{aq_disconnect}()},
+\code{\link{aq_ensure_connection}()},
+\code{\link{aq_is_connected}()}
+}
+\concept{Aquarius database connections}
 \keyword{internal}

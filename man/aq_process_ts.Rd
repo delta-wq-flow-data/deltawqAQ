@@ -25,3 +25,10 @@ Processes the time series into a clean data frame after Aquarius database retrie
 Cleans up the JSON format data obtained by the Aquarius API request.
 The function is called in the get_ts functions as an intermediate step.
 }
+\seealso{
+Other Retrieve time series: 
+\code{\link{aq_get_ts}()},
+\code{\link{aq_get_ts_multi_location}()},
+\code{\link{aq_get_ts_multi_param}()}
+}
+\concept{Retrieve time series}

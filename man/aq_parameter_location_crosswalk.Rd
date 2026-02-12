@@ -19,4 +19,10 @@ Dataset for all which locations are associated with each parameter in the Aquari
 \details{
 Aquarius locations and associated parameters
 }
+\seealso{
+Other Metadata: 
+\code{\link{aq_all_locations}},
+\code{\link{aq_all_parameters}}
+}
+\concept{Metadata}
 \keyword{datasets}

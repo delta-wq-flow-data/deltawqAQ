@@ -29,5 +29,11 @@ Retrieves the parameters (IDs, names) and specific time series identifiers assoc
 }
 \examples{
 aq_get_location_parameters(cdec_code = "SJW")
-
 }
+\seealso{
+Other Retrieve metadata: 
+\code{\link{aq_get_location_list}()},
+\code{\link{aq_get_location_metadata}()},
+\code{\link{aq_get_parameter_locations}()}
+}
+\concept{Retrieve metadata}

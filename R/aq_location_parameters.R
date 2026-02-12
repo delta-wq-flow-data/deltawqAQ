@@ -12,7 +12,7 @@
 #'
 #' @examples
 #' aq_get_location_parameters(cdec_code = "SJW")
-#'
+#' @family Retrieve metadata
 #' @export
 aq_get_location_parameters = function(cdec_code=NULL, location_id=NULL, aq_location_id=NULL) {
 

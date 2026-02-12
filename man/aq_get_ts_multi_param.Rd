@@ -51,5 +51,11 @@ multi_param_ts <- aq_get_ts_multi_param(
   query_to = lubridate::now()
   )
 }
-
 }
+\seealso{
+Other Retrieve time series: 
+\code{\link{aq_get_ts}()},
+\code{\link{aq_get_ts_multi_location}()},
+\code{\link{aq_process_ts}()}
+}
+\concept{Retrieve time series}

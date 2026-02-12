@@ -11,7 +11,7 @@
 #'
 #' @examples
 #' aq_get_parameter_locations("Water Temp")
-#'
+#' @family Retrieve metadata
 #' @export
 aq_get_parameter_locations <- function(param) {
   aq_ensure_connection()
