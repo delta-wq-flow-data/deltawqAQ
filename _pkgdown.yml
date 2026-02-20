@@ -11,16 +11,12 @@ reference:
     contents:
       - aq_connect
       - aq_disconnect
-      - aq_check_proxy_health
       - aq_is_connected
 
   - title: "Time series Retrieval"
     desc: "Functions and helper functions to retrieve time series data"
     contents:
       - aq_get_ts
-      - aq_get_ts_multi_location
-      - aq_get_ts_multi_param
-      - aq_process_ts
 
   - title: "Retrieve metadata"
     desc: "Functions to receive metadata on locations and parameters"
