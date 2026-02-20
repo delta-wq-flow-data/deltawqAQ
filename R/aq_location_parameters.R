@@ -16,30 +16,52 @@
 #' @export
 aq_get_location_parameters = function(cdec_code=NULL, location_id=NULL, aq_location_id=NULL) {
 
-  # Check connection
   aq_ensure_connection()
 
   # Looks for either cdec code, location_id, or aq_location_id within all locations
-
   if (!is.null(cdec_code)) {
     data_filtered <- deltawqAQ::aq_all_locations|>
       dplyr::filter(cdec_code %in% .env$cdec_code)
+    not_found <- cdec_code[!cdec_code %in% data_filtered$cdec_code]
+    if (length(not_found) > 0) {
+      cli::cli_alert_warning("The following cdec_codes were not found in deltawqAQ::aq_all_locations: {paste(not_found, collapse = ', ')}")
+    }
   }
+
   if (!is.null(location_id)) {
     data_filtered <- deltawqAQ::aq_all_locations|>
       dplyr::filter(location_id %in% .env$location_id)
+    not_found <- location_id[!location_id %in% data_filtered$location_id]
+    if (length(not_found) > 0) {
+      cli::cli_alert_warning("The following location_id were not found in deltawqAQ::aq_all_locations: {paste(not_found, collapse = ', ')}")
+    }
   }
+
   if (!is.null(aq_location_id)) {
     data_filtered <- deltawqAQ::aq_all_locations|>
       dplyr::filter(aq_location_id %in% .env$aq_location_id)
+    not_found <- aq_location_id[!aq_location_id %in% data_filtered$aq_location_id]
+    if (length(not_found) > 0) {
+      cli::cli_alert_warning("The following aq_location_ids were not found in deltawqAQ::aq_all_locations: {paste(not_found, collapse = ', ')}")
+    }
+  }
+
+  # Check if location was found
+  if (nrow(data_filtered) == 0) {
+    cli::cli_alert_warning("No locations matched the specified criteria. Check deltawqAQ::aq_all_locations for location names.")
+    return(invisible(NULL))
   }
 
   # Get all identifiers for entered locations
   identifiers <- data_filtered$aq_location_id
 
+  # Track successes and failures
+  successful_locations <- character()
+  failed_locations <- character()
+
   # Use purrr to loop through each identifier and get time series descriptions
   json_ts_params_df <- purrr::map_df(identifiers, function(id) {
-
+    tryCatch({
       resp <- aq_request() |>
         httr2::req_url_path_append("GetTimeSeriesDescriptionList") |>
         httr2::req_url_query(LocationIdentifier = id, Publish = "true") |>
@@ -50,11 +72,12 @@ aq_get_location_parameters = function(cdec_code=NULL, location_id=NULL, aq_locat
       ts_params <- body$TimeSeriesDescriptions
 
       if (is.null(ts_params) || length(ts_params$Identifier) == 0) {
-        return(NULL)
+        cli::cli_alert_warning("No parameters found for location {id}.")
+        failed_locations <<- c(failed_locations, id)
+        return(invisible(NULL))
       }
 
-    if (length(ts_params$Identifier) > 0) {
-      ts_params |>
+    ts_data <- ts_params |>
         dplyr::select(aq_location_id = LocationIdentifier,
                       parameter_id = ParameterId,
                       parameter_name = Parameter,
@@ -62,15 +85,29 @@ aq_get_location_parameters = function(cdec_code=NULL, location_id=NULL, aq_locat
                       unit = Unit,
                       ts_id = Identifier,
                       ts_unique_id = UniqueId)
-    } else {
-      NULL  # map_df will skip NULL results
-    }
+
+      successful_locations <<- c(successful_locations, id)
+      return(ts_data)
+    }, error = function(e) {
+      cli::cli_alert_danger("Failed to process location {id}: {conditionMessage(e)}")
+      failed_locations <<- c(failed_locations, id)
+      return(invisible(NULL))
+    })
   })
 
-  # Combine with additional location information
+  # Report successes and failures
+  if (length(failed_locations) > 0) {
+    cli::cli_alert_warning("The following locations failed: {paste(failed_locations, collapse = ', ')}")
+  }
+  if (length(successful_locations) == 0) {
+    cli::cli_alert_danger("No locations returned data.")
+    return(invisible(NULL))
+  }
+
+  # Combine with additional location information for df product
   df <- json_ts_params_df |>
     dplyr::left_join(data_filtered, by = "aq_location_id") |>
-    dplyr::select(cdec_code, location_id, aq_location_name, aq_location_id, parameter_name, unit, label, updated_at, ts_unique_id)
+    dplyr::select(aq_location_id, location_id, aq_location_name, aq_location_id, parameter_name, unit, label, updated_at, ts_unique_id)
   return(df)
 
 }
