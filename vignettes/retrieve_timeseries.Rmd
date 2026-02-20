@@ -1,5 +1,5 @@
 ---
-title: "Timeseries workflow"
+title: "Retrieve timeseries"
 output: 
   rmarkdown::html_document:
     toc: true
@@ -7,14 +7,10 @@ output:
       collapsed: true
       smooth_scroll: true
 vignette: >
-  %\VignetteIndexEntry{Timeseries workflow}
+  %\VignetteIndexEntry{Retrieve multiple parameters and locations}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-
-## Introduction
-
-This vignette describes a general workflow for querying and viewing data from the Aquarius database using the `deltawqAQ` package. Steps include identifying the appropriate location and parameter codes using the `aq_all_locations` dataset and the `aq_get_location_parameters` function, then querying a timeseries using the `aq_get_ts` function, and making a basic plot. For working with multiple parameters or locations, see the `retrieve_multi_ts` vignette. 
 
 ```{r, echo = FALSE}
 knitr::opts_chunk$set(
@@ -23,7 +19,9 @@ knitr::opts_chunk$set(
 )
 ```
 
-Start by loading packages. 
+## Introduction
+
+This vignette describes a general workflow for querying and viewing multi-parameter and multi-location data from the Aquarius database using the `deltawqAQ` package. Steps include identifying the appropriate location and parameter codes using the `aq_all_locations` dataset and the `aq_get_location_parameters` function, then querying timeseries using the `aq_get_ts` function, which can query a single parameter and location, a single parameter and multiple locations, or a single location with multiple parameters. Code for making basic plot and writing the data are also included. 
 
 ```{r setup, warning = FALSE, message = FALSE}
 library(deltawqAQ)
@@ -31,12 +29,13 @@ library(ggplot2)
 library(lubridate)
 library(dplyr)
 library(DT)
-library(leaflet)
 ```
+
+## Single location or parameters
 
 To work with Aquarius data, you may want to start with exploring available locations and/or available parameters.
 
-## Start with location
+### Start with location
 
 You may start by figuring out the location code(s) of interest. Functions will take `cdec_code`, `location_id`, or `aquarius_id`, with most users tending to be most familiar with `cdec_code`. 
 
@@ -53,14 +52,14 @@ DT::datatable(deltawqAQ::aq_all_locations,
 View locations on a map. 
 
 ```{r}
-leaflet()  |> 
-  addTiles() |> 
-  addMarkers(lng = deltawqAQ::aq_all_locations$longitude, 
+leaflet::leaflet()  |> 
+  leaflet::addTiles() |> 
+  leaflet::addMarkers(lng = deltawqAQ::aq_all_locations$longitude, 
              lat = deltawqAQ::aq_all_locations$latitude, 
              label = deltawqAQ::aq_all_locations$cdec_code)
 ```
 
-### Look at available parameters
+#### Look at available parameters
 Once you have picked your location, take a look at the parameters you would like to query. The `aq_get_location_parameters` function will connect to the Aquarius database based on your credentials, then retrieve all parameters associated with the location you have selected. 
 
 We have selected the `SJW` location for this example. You will need `parameter_name` for your time series query, so identify the correct value for the next step.
@@ -72,7 +71,7 @@ DT::datatable(param_list,
               options = list(scrollX = TRUE, autoWidth = TRUE))
 ```
 
-## Start with parameter
+### Start with parameter
 
 Instead of starting with location, you may also start by figuring out the parameter code(s) of interest. 
 
@@ -83,7 +82,7 @@ DT::datatable(deltawqAQ::aq_all_parameters,
                              order = list(list(1, 'asc'))))
 ```
 
-### Look at available locations
+#### Look at available locations
 
 From there you can look at which locations have data for your parameter of interest
 
@@ -95,15 +94,15 @@ DT::datatable(wt_locations,
                              autoWidth = TRUE))
 ```
 
-## Query data
+### Query data
 
-Now you can run your query for your location and parameter of interest. You can enter a datetime or a date for the `query_from` and `query_to` fields. 
+Now you can run your query for your location and parameter of interest. You can enter a datetime or a date for the `query_from` and `query_to` fields. The function defaults to include data from 2 weeks prior to the current date. If you don't enter query dates, the function defaults to include data from 2 weeks prior to the current date.
 
 ```{r}
 ts <- aq_get_ts(cdec_code = "SJW", 
                 parameter = "Water Temp", 
                 query_from = "2025-12-01 00:00:00", 
-                query_to = "2026-02-01 00:00:00")
+                query_to = "2026-01-01 00:00:00")
 ```
 
 ```{r}
@@ -112,7 +111,7 @@ DT::datatable(ts,
               options = list(scrollX = TRUE, autoWidth = TRUE))
 ```
 
-## Summarize data
+### Summarize data
 You may want to condense the data by creating a dataset with daily averages. 
 
 ```{r, warning = FALSE, message = FALSE}
@@ -129,7 +128,7 @@ DT::datatable(ts_daily,
               options = list(scrollX = TRUE))
 ```
 
-## Visualize data
+### Visualize data
 Now you can make a simple plot for daily average values for the time series.
 
 ```{r, fig.height = 4, fig.width = 6, fig.title = ts_daily$aq_location_name[1], fig.alt = "Plot of daily average water temperature at SJW"}
@@ -151,3 +150,254 @@ You can then write data to your local drive. Specify the filepath of interest an
 write.csv(ts_daily, 
           here::here(paste0("ts_SJW_wt.csv")))
 ```
+
+## Multiple parameters for one location
+
+Now we can try an example for getting multi-parameter data. 
+
+### Explore locations
+
+As in the first example, you can start by figuring out the location code(s) of interest. Functions will take `cdec_code`, `location_id`, or `aquarius_id`, with most users tending to be most familiar with `cdec_code`. 
+
+Use the `aq_all_locations` data object to view all the available locations. This object gets generated in the package, and locations should be stable once all locations become telemetered.
+
+```{r}
+DT::datatable(deltawqAQ::aq_all_locations, 
+              rownames = FALSE,
+              options = list(scrollX = TRUE,
+                             order = list(list(0, 'asc')),
+                             autoWidth = TRUE))
+```
+
+Let's select SJW. 
+
+```{r}
+location = "SJW"
+```
+
+Once you have picked your location, take a look at the parameters you would like to query. The `aq_get_location_parameters` function will connect to the Aquarius database based on your credentials, then retrieve all parameters associated with the location you have selected. You will need `parameter_name` for your time series query, so identify the correct value for the next step.
+
+### Select parameter names
+Now use `aq_get_location_parameters` to figure out the parameter names for your location.
+
+```{r}
+DT::datatable(aq_get_location_parameters(cdec_code = location), 
+              rownames = FALSE,
+              options = list(scrollX = TRUE, 
+                             autoWidth = TRUE))
+```
+
+### Query data 
+Now that you have your location and parameters you can use the `aq_get_ts` function to run your query for your the timeframe of interest. You can enter a datetime or a date for the `query_from` and `query_to` fields. If you don't enter query dates, the function defaults to include data from 2 weeks prior to the current date.
+
+#### Select parameters and dates
+```{r}
+params = c("Turbidity, Form Neph", "Water Temp", "Sp Cond", "CHL RFU", "pH")
+start_date = lubridate::today()-21
+end_date = lubridate::today()
+```
+
+#### Query and look at data
+```{r, message = FALSE, warning = FALSE}
+multi_param_ts <- aq_get_ts(
+  cdec_code = location, 
+  parameter = params, 
+  query_from = start_date, 
+  query_to = end_date
+  )
+
+print(paste("Parameters with data:", paste(unique(multi_param_ts$parameter_name), collapse = ", ")))
+```
+
+```{r}
+DT::datatable(multi_param_ts, 
+              rownames = FALSE,
+              options = list(scrollX = TRUE, 
+                             autoWidth = TRUE))
+```
+
+
+### Summarize by daily values
+You may want to condense the data by creating a dataset with daily averages. 
+
+```{r}
+multi_param_daily <- multi_param_ts  |> 
+  mutate(date = lubridate::date(datetime)) |> 
+  group_by(date, cdec_code, location_id, parameter_name) |> 
+  summarize(daily_avg = round(mean(value),2)) |> 
+  ungroup()
+```
+
+```{r}
+DT::datatable(multi_param_daily, 
+              rownames = FALSE,
+              options = list(scrollX = TRUE))
+```
+
+
+### Visualize time series for each parameter
+
+If you'd like to visualize your data, here are some examples of plots you can make with your data. 
+
+#### Daily Averages
+```{r fig.height = 7, fig.width = 6, fig.alt = "Plot of daily average values across different parameters at San Joaquin West (SJW)"}
+ggplot(multi_param_daily) +
+  geom_point(aes(x=date, y=daily_avg, color = parameter_name)) +
+  geom_line(aes(x=date, y=daily_avg, color = parameter_name)) +
+  facet_wrap(~parameter_name, nrow = nrow(multi_param_daily), scales = "free_y") +
+  labs(x = "Date", y = "Daily Average Value", title = paste("Daily Average Water Quality for", location))+
+  theme_bw() +
+  theme(strip.text = element_text(size = 12),
+        axis.title = element_text(size = 12),
+        legend.position = "none",
+        plot.title = element_text(hjust = 0.5),
+        axis.text = element_text(size = 11))
+```
+
+#### 15 minute data
+```{r, fig.height = 7, fig.width = 6, message = FALSE, warning = FALSE, fig.alt = "Plot of 15-minute values across different parameters at San Joaquin West (SJW)"}
+ggplot(multi_param_ts) +
+  geom_line(aes(datetime, value, color = parameter_name)) +
+  facet_wrap(~parameter_name, nrow = length(unique(multi_param_ts$parameter_name)), scales = "free_y") +
+  labs(x = "Datetime", y = "Value", title = paste("15-minute Water Quality for", location))+
+  theme_bw() +
+  theme(strip.text = element_text(size = 12),
+        axis.title = element_text(size = 12),
+        legend.position = "none",
+        plot.title = element_text(hjust = 0.5),
+        axis.text = element_text(size = 11))
+```
+
+### Write data
+You can then write data to your local drive. Specify the filepath of interest and customize the filename if desired. This example writes the averaged data. 
+
+```{r, eval=FALSE}
+param_label <- paste(unique(multi_param_ts$parameter_name), collapse = "-")
+
+write.csv(multi_param_daily, 
+          here::here(paste0("ts_", location, "_",param_label,"_",  start_date, "-", end_date)))
+```
+
+## Multiple locations for one parameter
+
+### Explore parameter names
+
+Another option is to start by figuring out the parameter(s) of interest. Functions will use `parameter_name` for queries.
+
+Use the `aq_all_parameters` data object to view all the available parameters. This object gets generated in the package, and parameters should be stable once all locations become telemetered.
+
+```{r}
+DT::datatable(deltawqAQ::aq_all_parameters, 
+              rownames = FALSE,
+              options = list(scrollX = TRUE,
+                             order = list(list(1, 'asc'))))
+```
+
+### Select locations 
+
+Now use `aq_get_parameter_locations` function to figure out the locations that contain data for your parameter.
+
+```{r}
+turbidity_locations <- aq_get_parameter_locations("Turbidity, Form Neph")
+DT::datatable(turbidity_locations, 
+              rownames = FALSE,
+              options = list(scrollX = TRUE, autoWidth = TRUE))
+```
+
+Now select your locations from the list. 
+
+```{r}
+locations <- c("SJW", "SGG", "RYF", "TOE")
+```
+
+### Query data 
+Now that you have your locations and parameter you can use the `aq_get_ts` function to run your query for the timeframe of interest. You can enter a datetime or a date for the `query_from` and `query_to` fields. If you don't enter query dates, the function defaults to include data from 2 weeks prior to the current date.
+
+#### Select parameter and dates
+```{r}
+param = "Turbidity, Form Neph"
+startdate = "2025-12-01"
+enddate = lubridate::today()
+```
+
+#### Query and look at data
+```{r, message = FALSE, warning = FALSE}
+multi_location_ts <- aq_get_ts(cdec_code = locations, 
+                                         parameter = param, 
+                                         query_from = startdate, 
+                                         query_to = enddate)
+
+print(paste("locations with data:", paste(unique(multi_location_ts$cdec_code), collapse = ", ")))
+```
+
+```{r}
+DT::datatable(multi_location_ts, 
+              rownames = FALSE,
+              options = list(scrollX = TRUE, autoWidth = TRUE))
+```
+
+### Summarize by daily values
+You may want to condense the data by creating a dataset with daily averages. 
+
+```{r}
+multi_location_daily <- multi_location_ts |> 
+  mutate(date = lubridate::date(datetime)) |> 
+  group_by(date, cdec_code, location_id, parameter_name) |> 
+  summarize(daily_avg = round(mean(value),2)) |> 
+  ungroup()
+```
+
+```{r}
+DT::datatable(multi_location_daily, 
+              rownames = FALSE,
+              options = list(scrollX = TRUE))
+```
+
+
+### Visualize time series for each location
+
+If you'd like to visualize your data, here are some examples of plots you can make with your data. 
+
+#### Daily Averages
+
+```{r, fig.height = 7, fig.width = 6, fig.alt = "Plot of daily average turbidity across stations"}
+ggplot(multi_location_daily) +
+  geom_point(aes(x=date, y=daily_avg, color = cdec_code)) +
+  geom_line(aes(x=date, y=daily_avg, color = cdec_code)) +
+  facet_wrap(~cdec_code, nrow = nrow(multi_location_daily), scales = "free_y") +
+  labs(x = "Date", y = "Daily Average Value", title = paste("Daily Average", param, "across stations"))+
+  theme_bw() +
+  theme(strip.text = element_text(size = 12),
+        axis.title = element_text(size = 12),
+        legend.position = "none",
+        plot.title = element_text(hjust = 0.5),
+        axis.text = element_text(size = 11))
+```
+
+#### 15 minute data
+
+Include a threshold line if useful.
+
+```{r, message = FALSE, warning = FALSE, fig.height = 7, fig.width = 6, fig.alt = "Plot of 15-minute turbidity data across multiple stations with a threshold at 12 FNU."}
+ggplot(multi_location_ts) +
+  geom_line(aes(datetime, value, color = cdec_code)) +
+  geom_hline(yintercept = 12, linetype = "dashed") + 
+  facet_wrap(~cdec_code, nrow = nrow(multi_location_ts), scales = "free_y") +
+  labs(x = "Datetime", y = param,  title = paste("15-minute", param, "across stations"))+
+  theme_bw() +
+  theme(strip.text = element_text(size = 12),
+        axis.title = element_text(size = 12),
+        legend.position = "none",
+        axis.text = element_text(size = 11))
+```
+
+### Write data
+
+You can then write data to your local drive. Specify the filepath of interest and customize the filename if desired. 
+
+```{r, eval = FALSE}
+loc_label <- paste(unique(multi_location_ts$cdec_code), collapse = "-")
+write.csv(multi_location_daily, 
+          here::here(paste0("ts_", param, "_",sta_label,"_",  start_date, "-", end_date)))
+```
+
