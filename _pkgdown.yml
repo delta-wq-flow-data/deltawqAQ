@@ -14,7 +14,7 @@ reference:
       - aq_is_connected
 
   - title: "Time series Retrieval"
-    desc: "Functions and helper functions to retrieve time series data"
+    desc: "Function to retrieve time series data"
     contents:
       - aq_get_ts
 
@@ -26,7 +26,7 @@ reference:
       - aq_get_location_parameters
       - aq_get_parameter_locations
 
-  - title: "Metadata"
+  - title: "Metadata objects"
     desc: "Reference list for locations and parameters"
     contents:
       - aq_all_locations

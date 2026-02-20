@@ -24,9 +24,7 @@ See the Articles tab for examples of how to use this package.
 
 * `aq_get_location_parameters()` for viewing the parameters associated with a location
 * `aq_get_parameter_locations()` for viewing the locations associated with a parameter
-* `aq_get_ts()` for obtaining time series for one location and parameter
-* `aq_get_ts_multi_param()` for obtaining time series for several parameters at one location
-* `aq_get_ts_multi_location()` for obtaining time series for one parameter at several locations
+* `aq_get_ts()` for obtaining time series for one location and parameter, for several parameters at one location, or for obtaining time series for one parameter at several locations
 
 
 
