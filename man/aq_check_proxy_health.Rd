@@ -23,3 +23,4 @@ Other Aquarius database connections:
 \code{\link{aq_request}()}
 }
 \concept{Aquarius database connections}
+\keyword{internal}

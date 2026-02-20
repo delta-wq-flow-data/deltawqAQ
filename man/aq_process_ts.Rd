@@ -32,3 +32,4 @@ Other Retrieve time series:
 \code{\link{aq_get_ts_multi_param}()}
 }
 \concept{Retrieve time series}
+\keyword{internal}

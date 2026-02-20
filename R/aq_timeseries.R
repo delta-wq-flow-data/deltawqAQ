@@ -99,6 +99,7 @@ aq_get_ts <- function(cdec_code = NULL,
 #' @param query_to End datetime for query; also accepts date
 #' @family Retrieve time series
 #' @return A data frame with 7 columns that will be further modified in get_ts functions
+#' @keywords internal
 aq_process_ts = function(location_code, parameter, query_from, query_to) {
 
   filtered_params <- aq_get_location_parameters(aq_location_id = location_code)

@@ -7,9 +7,9 @@
 #' @details Provides message if proxy server is not healthy
 #'
 #' @family Aquarius database connections
-#' @export
+#' @keywords internal
 aq_check_proxy_health <- function() {
-  resp <- httr2::request(.proxy_url) |> httr2::req_perform()
+  resp <- httr2::request(W.proxy_url) |> httr2::req_perform()
   status_code <- httr2::resp_status(resp)
   if (status_code == 200) {
     cli::cli_alert_success("Proxy server is up and healthy")
@@ -238,7 +238,7 @@ aq_request <- function(url = NULL) {
 #'
 #' @return Logical indicating whether there is an active connection
 #' @family Aquarius database connections
-#' @export
+#' @keywords internal
 #'
 #' @examples
 #' if (aq_is_connected()) {
