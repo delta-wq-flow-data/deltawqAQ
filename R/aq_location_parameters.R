@@ -35,10 +35,10 @@ aq_get_location_parameters = function(cdec_code=NULL, location_id=NULL, aq_locat
   }
 
   # Get all identifiers for entered locations
-  Identifiers <- data_filtered$aq_location_id
+  identifiers <- data_filtered$aq_location_id
 
   # Use purrr to loop through each identifier and get time series descriptions
-  json_ts_params_df <- purrr::map_df(Identifiers, function(id) {
+  json_ts_params_df <- purrr::map_df(identifiers, function(id) {
 
       resp <- aq_request() |>
         httr2::req_url_path_append("GetTimeSeriesDescriptionList") |>
