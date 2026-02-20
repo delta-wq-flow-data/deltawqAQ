@@ -45,7 +45,7 @@ Use the `aq_all_locations` data object to view all the available locations. This
 DT::datatable(deltawqAQ::aq_all_locations, 
               rownames = FALSE,
               options = list(scrollX = TRUE,
-                             order = list(list(1, 'asc')),
+                             order = list(list(0, 'asc')),
                              autoWidth = TRUE))
 ```
 
@@ -68,7 +68,9 @@ We have selected the `SJW` location for this example. You will need `parameter_n
 param_list <- aq_get_location_parameters(cdec_code = "SJW")
 DT::datatable(param_list, 
               rownames = FALSE,
-              options = list(scrollX = TRUE, autoWidth = TRUE))
+             options = list(scrollX = TRUE,
+                             order = list(list(3, 'asc')),
+                             autoWidth = TRUE))
 ```
 
 ### Start with parameter
@@ -79,7 +81,7 @@ Instead of starting with location, you may also start by figuring out the parame
 DT::datatable(deltawqAQ::aq_all_parameters, 
               rownames= FALSE,
               options = list(scrollX = TRUE,
-                             order = list(list(1, 'asc'))))
+                             order = list(list(0, 'asc'))))
 ```
 
 #### Look at available locations
@@ -91,18 +93,19 @@ wt_locations <- aq_get_parameter_locations("Water Temp")
 DT::datatable(wt_locations, 
               rownames= FALSE,
               options = list(scrollX = TRUE,
+                             order = list(list(2, 'asc')),
                              autoWidth = TRUE))
 ```
 
 ### Query data
 
-Now you can run your query for your location and parameter of interest. You can enter a datetime or a date for the `query_from` and `query_to` fields. The function defaults to include data from 2 weeks prior to the current date. If you don't enter query dates, the function defaults to include data from 2 weeks prior to the current date.
+Now you can run your query for your location and parameter of interest. You can enter a datetime or a date for the `query_from` and `query_to` fields. If you don't enter query dates, the function defaults to include data from 2 weeks prior to the current date.
 
 ```{r}
 ts <- aq_get_ts(cdec_code = "SJW", 
                 parameter = "Water Temp", 
                 query_from = "2025-12-01 00:00:00", 
-                query_to = "2026-01-01 00:00:00")
+                query_to = "2026-02-01 00:00:00")
 ```
 
 ```{r}
