@@ -58,3 +58,4 @@ Other Retrieve time series:
 \code{\link{aq_process_ts}()}
 }
 \concept{Retrieve time series}
+\keyword{internal}

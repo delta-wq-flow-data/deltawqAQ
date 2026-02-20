@@ -175,8 +175,6 @@ aq_process_ts = function(location_code, parameter, query_from, query_to) {
     ))
   }
 
-  cli::cli_alert_success("Retrieved {nrow(points)} data points")
-
   # Convert timestamps to work in ggplot
   points$Datetime <- lubridate::ymd_hms(points$Timestamp)
 
@@ -226,7 +224,7 @@ aq_process_ts = function(location_code, parameter, query_from, query_to) {
 #'   )
 #'   }
 #' @family Retrieve time series
-#' @export
+#' @keywords internal
 aq_get_ts_multi_location <- function(cdec_code = NULL,
                                     parameter,
                                     query_from = lubridate::today()-14,
@@ -271,7 +269,6 @@ aq_get_ts_multi_location <- function(cdec_code = NULL,
   # Process each location and collect results
   all_ts_data <- purrr::map_df(location_codes, function(location) {
     tryCatch({
-      cli::cli_alert_info("Processing location: {location}")
 
       # Get time series data
       df <- aq_process_ts(location, parameter, query_from, query_to)
@@ -344,7 +341,7 @@ aq_get_ts_multi_location <- function(cdec_code = NULL,
 #'   )
 #' }
 #' @family Retrieve time series
-#' @export
+#' @keywords internal
 aq_get_ts_multi_param <- function(cdec_code = NULL,
                                   parameter,
                                   query_from = lubridate::today()-14,
@@ -394,7 +391,6 @@ aq_get_ts_multi_param <- function(cdec_code = NULL,
   # Process each parameter and collect results
   all_ts_data <- purrr::map_df(parameter, function(param) {
     tryCatch({
-      cli::cli_alert_info("Processing parameter: {param}")
 
       # Get time series data
       df <- aq_process_ts(location_code, param, query_from, query_to)
