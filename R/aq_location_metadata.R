@@ -84,7 +84,8 @@ aq_get_location_list  <- function() {
     dplyr::filter(grepl("_", aq_location_id)) |>
     tidyr::separate(col = aq_location_id, into = c("location_id", "cdec_code"), sep = "_", remove = FALSE) |>
     tidyr::separate(col = aq_location_name, into = c("cdec", "location_name"), sep = " - ", remove = FALSE ) |>
-    dplyr::mutate(cdec_code = toupper(substr(cdec_code, 1, 3)))
+    dplyr::mutate(cdec = dplyr::if_else(grepl("CM", cdec), gsub("^CM", "C", cdec), cdec),
+                  cdec_code = toupper(substr(cdec, 1, 3)))
 
   json_location_data <- purrr::map_df(df$aq_location_id, function(id)  {
     # get lat/lon
