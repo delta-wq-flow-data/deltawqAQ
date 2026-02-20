@@ -56,7 +56,6 @@ aq_get_location_metadata = function(cdec_code = NULL, location_id = NULL, aq_loc
 #' @export
 aq_get_location_list  <- function() {
 
-  # Check connection
   aq_ensure_connection()
 
   resp <- aq_request() |>
