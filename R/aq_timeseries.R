@@ -10,8 +10,8 @@
 #' @param location_id Numeric identifier for location; one option for querying
 #' @param aq_location_id Location identifier as displayed in Aquarius database; one option for querying
 #' @param parameter Parameter name
-#' @param query_from Start datetime for query; also accepts date
-#' @param query_to End datetime for query; also accepts date
+#' @param query_from Start datetime for query; also accepts date. Defaults to 2 weeks before today.
+#' @param query_to End datetime for query; also accepts date. Defaults to today.
 
 #' @return A data frame containing the time series values and associated metadata.
 #'
@@ -34,15 +34,14 @@
 
 aq_get_ts <- function(cdec_code = NULL,
                       parameter,
-                      query_from, query_to,
+                      query_from = lubridate::today()-14,
+                      query_to = lubridate::today(),
                       location_id = NULL,
                       aq_location_id = NULL) {
 
-  # Check connection
   aq_ensure_connection()
 
   # Looks for either cdec code, location_id, or aq_location_id within all locations
-
   if (!is.null(cdec_code)) {
     data_filtered <- deltawqAQ::aq_all_locations |>
       dplyr::filter(cdec_code %in% .env$cdec_code)
@@ -170,8 +169,8 @@ aq_process_ts = function(location_code, parameter, query_from, query_to) {
 #' @param location_id List of numeric identifiers for location; one option for querying
 #' @param aq_location_id List of location identifiers as displayed in Aquarius database; one option for querying
 #' @param parameter Parameter name
-#' @param query_from Start datetime for query; also accepts date
-#' @param query_to End datetime for query; also accepts date
+#' @param query_from Start datetime for query; also accepts date. Defaults to 2 weeks before today.
+#' @param query_to End datetime for query; also accepts date. Defaults to today.
 #'
 #' @return A data frame of the combined time series for all locations
 #'
@@ -193,7 +192,8 @@ aq_process_ts = function(location_code, parameter, query_from, query_to) {
 #' @export
 aq_get_ts_multi_location <- function(cdec_code = NULL,
                                     parameter,
-                                    query_from, query_to,
+                                    query_from = lubridate::today()-14,
+                                    query_to = lubridate::today(),
                                     location_id = NULL,
                                     aq_location_id = NULL) {
 
@@ -287,8 +287,8 @@ aq_get_ts_multi_location <- function(cdec_code = NULL,
 #' @param location_id Numeric identifier for location; one option for querying
 #' @param aq_location_id Location identifier as displayed in Aquarius database; one option for querying
 #' @param parameter List of parameter names
-#' @param query_from Start datetime for query; also accepts date
-#' @param query_to End datetime for query; also accepts date
+#' @param query_from Start datetime for query; also accepts date. Defaults to 2 weeks before today.
+#' @param query_to End datetime for query; also accepts date. Defaults to today.
 #'
 #' @return A data frame of the combined time series for all parameters
 #'
@@ -310,7 +310,8 @@ aq_get_ts_multi_location <- function(cdec_code = NULL,
 #' @export
 aq_get_ts_multi_param <- function(cdec_code = NULL,
                                   parameter,
-                                  query_from, query_to,
+                                  query_from = lubridate::today()-14,
+                                  query_to = lubridate::today(),
                                   location_id = NULL,
                                   aq_location_id = NULL){
 

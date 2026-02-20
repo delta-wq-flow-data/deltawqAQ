@@ -7,8 +7,8 @@
 aq_get_ts_multi_param(
   cdec_code = NULL,
   parameter,
-  query_from,
-  query_to,
+  query_from = lubridate::today() - 14,
+  query_to = lubridate::today(),
   location_id = NULL,
   aq_location_id = NULL
 )
@@ -18,9 +18,9 @@ aq_get_ts_multi_param(
 
 \item{parameter}{List of parameter names}
 
-\item{query_from}{Start datetime for query; also accepts date}
+\item{query_from}{Start datetime for query; also accepts date. Defaults to 2 weeks before today.}
 
-\item{query_to}{End datetime for query; also accepts date}
+\item{query_to}{End datetime for query; also accepts date. Defaults to today.}
 
 \item{location_id}{Numeric identifier for location; one option for querying}
 
