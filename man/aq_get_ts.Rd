@@ -6,7 +6,7 @@
 \usage{
 aq_get_ts(
   cdec_code = NULL,
-  parameter,
+  parameter = NULL,
   query_from = lubridate::today() - 14,
   query_to = lubridate::today(),
   location_id = NULL,

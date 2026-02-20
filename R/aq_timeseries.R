@@ -32,59 +32,95 @@
 #' @family Retrieve time series
 #' @export
 
-aq_get_ts <- function(cdec_code = NULL,
-                      parameter,
+aq_get_ts <- function(cdec_code = NULL, parameter = NULL,
                       query_from = lubridate::today()-14,
                       query_to = lubridate::today(),
                       location_id = NULL,
                       aq_location_id = NULL) {
 
-  aq_ensure_connection()
-
-  # Looks for either cdec code, location_id, or aq_location_id within all locations
-  if (!is.null(cdec_code)) {
-    data_filtered <- deltawqAQ::aq_all_locations |>
-      dplyr::filter(cdec_code %in% .env$cdec_code)
-  }
-  if (!is.null(location_id)) {
-    data_filtered <- deltawqAQ::aq_all_locations |>
-      dplyr::filter(location_id %in% .env$location_id)
-  }
-  if (!is.null(aq_location_id)) {
-    data_filtered <- deltawqAQ::aq_all_locations |>
-      dplyr::filter(aq_location_id %in% .env$aq_location_id)
-  }
-
-  # Right after data_filtered
-  cli::cli_alert_info("After filtering: {nrow(data_filtered)} location{?s}")
-  cli::cli_alert_info("Location codes: {paste(data_filtered$aq_location_id, collapse = ', ')}")
-
-  # Check if any locations were found
-  if (nrow(data_filtered) == 0) {
-    cli::cli_alert_warning("No locations matched the specified criteria")
-    return(NULL)
-  }
-
-  # Get identifier for the filtered location (should be just one now)
-  location_code <- data_filtered$aq_location_id
-
-  # Function to obtain time series data
-  df <- aq_process_ts(location_code, parameter, query_from, query_to)
-
-  ts_data <- df |>
-    dplyr::left_join(data_filtered, by = "aq_location_id") |>
-    dplyr::select(datetime,
-                  cdec_code,
-                  location_id,
-                  aq_location_name,
-                  aq_location_id,
-                  parameter_name,
-                  value,
-                  unit,
-                  approval)
-
-  return(ts_data)
+  if (length(parameter)>1 & length(cdec_code)>1) {
+    cli::cli_abort("Please query either multiple parameters or multiple locations, not both.")
 }
+
+  if (length(cdec_code)>1) {
+    aq_get_ts_multi_location(cdec_code = cdec_code, parameter = parameter,
+                             query_from = query_from,
+                             query_to = query_to,
+                             location_id = location_id,
+                             aq_location_id = aq_location_id)
+  }
+
+ else if (length(parameter)>1) {
+    aq_get_ts_multi_param(cdec_code = cdec_code, parameter = parameter,
+                              query_from = query_from,
+                              query_to = query_to,
+                              location_id = location_id,
+                              aq_location_id = aq_location_id)
+ }
+
+  else if (length(parameter) == 1 & length(cdec_code) == 1) {
+    aq_get_ts_multi_param(cdec_code = cdec_code, parameter = parameter,
+                          query_from = query_from,
+                          query_to = query_to,
+                          location_id = location_id,
+                          aq_location_id = aq_location_id)
+  }
+
+}
+
+# aq_get_ts <- function(cdec_code = NULL,
+#                       parameter,
+#                       query_from = lubridate::today()-14,
+#                       query_to = lubridate::today(),
+#                       location_id = NULL,
+#                       aq_location_id = NULL) {
+#
+#   aq_ensure_connection()
+#
+#   # Looks for either cdec code, location_id, or aq_location_id within all locations
+#   if (!is.null(cdec_code)) {
+#     data_filtered <- deltawqAQ::aq_all_locations |>
+#       dplyr::filter(cdec_code %in% .env$cdec_code)
+#   }
+#   if (!is.null(location_id)) {
+#     data_filtered <- deltawqAQ::aq_all_locations |>
+#       dplyr::filter(location_id %in% .env$location_id)
+#   }
+#   if (!is.null(aq_location_id)) {
+#     data_filtered <- deltawqAQ::aq_all_locations |>
+#       dplyr::filter(aq_location_id %in% .env$aq_location_id)
+#   }
+#
+#   # Right after data_filtered
+#   cli::cli_alert_info("After filtering: {nrow(data_filtered)} location{?s}")
+#   cli::cli_alert_info("Location codes: {paste(data_filtered$aq_location_id, collapse = ', ')}")
+#
+#   # Check if any locations were found
+#   if (nrow(data_filtered) == 0) {
+#     cli::cli_alert_warning("No locations matched the specified criteria")
+#     return(NULL)
+#   }
+#
+#   # Get identifier for the filtered location (should be just one now)
+#   location_code <- data_filtered$aq_location_id
+#
+#   # Function to obtain time series data
+#   df <- aq_process_ts(location_code, parameter, query_from, query_to)
+#
+#   ts_data <- df |>
+#     dplyr::left_join(data_filtered, by = "aq_location_id") |>
+#     dplyr::select(datetime,
+#                   cdec_code,
+#                   location_id,
+#                   aq_location_name,
+#                   aq_location_id,
+#                   parameter_name,
+#                   value,
+#                   unit,
+#                   approval)
+#
+#   return(ts_data)
+# }
 
 #' @title Process Aquarius time series
 #'
