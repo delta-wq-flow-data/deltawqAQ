@@ -6,9 +6,9 @@
 #'
 #' @details Retrieves time series data for a single location and a single parameter.
 #' Exactly one value of either `cdec_code`, `location_id`, or `aq_location_id` should be provided and identified by the location identifier type.
-#' @param cdec_code Three-letter location code matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying
-#' @param location_id Numeric identifier for location; one option for querying
-#' @param aq_location_id Location identifier as displayed in Aquarius database; one option for querying
+#' @param cdec_code Three-letter location code matching identifiers from \href{cdec.ca.gov}{CDEC}; one mutually exclusive option for querying
+#' @param location_id Numeric identifier for location; one mutually exclusive option for querying
+#' @param aq_location_id Location identifier as displayed in Aquarius database; one mutually exclusive option for querying
 #' @param parameter Parameter name
 #' @param query_from Start datetime for query; also accepts date. Defaults to 2 weeks before today.
 #' @param query_to End datetime for query; also accepts date. Defaults to today.
@@ -166,9 +166,9 @@ aq_process_ts = function(location_code, parameter, query_from, query_to) {
 #' @details Retrieves time series data for one to multiple locations and a single parameter.
 #' A list of values for either cdec_code, location_id, or aq_location_id should be provided and identified by the location identifier type.
 #'
-#' @param cdec_code List of three-letter location codes matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying
-#' @param location_id List of numeric identifiers for location; one option for querying
-#' @param aq_location_id List of location identifiers as displayed in Aquarius database; one option for querying
+#' @param cdec_code List of three-letter location codes matching identifiers from \href{cdec.ca.gov}{CDEC}; one mutually exclusive option for querying
+#' @param location_id List of numeric identifiers for location; one mutually exclusive option for querying
+#' @param aq_location_id List of location identifiers as displayed in Aquarius database; one mutually exclusive option for querying
 #' @param parameter Parameter name
 #' @param query_from Start datetime for query; also accepts date. Defaults to 2 weeks before today.
 #' @param query_to End datetime for query; also accepts date. Defaults to today.

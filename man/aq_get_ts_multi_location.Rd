@@ -14,7 +14,7 @@ aq_get_ts_multi_location(
 )
 }
 \arguments{
-\item{cdec_code}{List of three-letter location codes matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying}
+\item{cdec_code}{List of three-letter location codes matching identifiers from \href{cdec.ca.gov}{CDEC}; one mutually exclusive option for querying}
 
 \item{parameter}{Parameter name}
 
@@ -22,9 +22,9 @@ aq_get_ts_multi_location(
 
 \item{query_to}{End datetime for query; also accepts date. Defaults to today.}
 
-\item{location_id}{List of numeric identifiers for location; one option for querying}
+\item{location_id}{List of numeric identifiers for location; one mutually exclusive option for querying}
 
-\item{aq_location_id}{List of location identifiers as displayed in Aquarius database; one option for querying}
+\item{aq_location_id}{List of location identifiers as displayed in Aquarius database; one mutually exclusive option for querying}
 }
 \value{
 A data frame of the combined time series for all locations

@@ -11,11 +11,11 @@ aq_get_location_parameters(
 )
 }
 \arguments{
-\item{cdec_code}{Three-letter location code matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying}
+\item{cdec_code}{Three-letter location code matching identifiers from \href{cdec.ca.gov}{CDEC}; one mutually exclusive option for querying}
 
-\item{location_id}{Numeric identifier for location; one option for querying}
+\item{location_id}{Numeric identifier for location; one mutually exclusive option for querying}
 
-\item{aq_location_id}{Location identifier as displayed in Aquarius database; one option for querying
+\item{aq_location_id}{Location identifier as displayed in Aquarius database; one mutually exclusive option for querying
 other functions that have already connected to the database, this value should be `FALSE` to avoid errors.}
 }
 \value{

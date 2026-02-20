@@ -3,9 +3,9 @@
 #'
 #' @details Retrieves the parameters (IDs, names) and specific time series identifiers associated with queried locations.
 #'
-#' @param cdec_code Three-letter location code matching identifiers from \href{cdec.ca.gov}{CDEC}; one option for querying
-#' @param location_id Numeric identifier for location; one option for querying
-#' @param aq_location_id Location identifier as displayed in Aquarius database; one option for querying
+#' @param cdec_code Three-letter location code matching identifiers from \href{cdec.ca.gov}{CDEC}; one mutually exclusive option for querying
+#' @param location_id Numeric identifier for location; one mutually exclusive option for querying
+#' @param aq_location_id Location identifier as displayed in Aquarius database; one mutually exclusive option for querying
 #' other functions that have already connected to the database, this value should be `FALSE` to avoid errors.
 #'
 #' @return A data frame of parameters filtered to queried location(s)
