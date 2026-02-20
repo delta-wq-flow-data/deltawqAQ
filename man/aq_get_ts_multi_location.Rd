@@ -36,21 +36,6 @@ Retrieves and optionally downloads time series for one parameter at multiple loc
 Retrieves time series data for one to multiple locations and a single parameter.
 A list of values for either cdec_code, location_id, or aq_location_id should be provided and identified by the location identifier type.
 }
-\examples{
-\dontrun{
-multi_sta_ts <- aq_get_ts_multi_location(
-  cdec_code = c("SJW", "MDM", "GSS"),
-  parameter = "Turbidity, Form Neph",
-  query_from = "2025-12-01 00:00:00",
-  query_to = "2026-01-01 00:00:00")
-multi_sta_ts <- aq_get_ts_multi_location(
-  location_id = c("11447903", "11447905", "11447890"),
-  parameter = "Sp Cond",
-  query_from = "2025-12-01 00:00:00",
-  query_to = lubridate::now()
-  )
-  }
-}
 \seealso{
 Other Retrieve time series: 
 \code{\link{aq_get_ts}()},

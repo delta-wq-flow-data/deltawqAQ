@@ -30,11 +30,11 @@ aq_get_ts(
 A data frame containing the time series values and associated metadata.
 }
 \description{
-Retrieves time series data from an Aquarius database and optionally downloads and writes the time series.
+Retrieves time series data from Aquarius database.
 }
 \details{
-Retrieves time series data for a single location and a single parameter.
-Exactly one value of either `cdec_code`, `location_id`, or `aq_location_id` should be provided and identified by the location identifier type.
+Retrieves time series data for either: a single location and a single parameter, a single location and one parameter, or a single parameter and multiple locations.
+Default input is cdec_code and other types of location ids should be identified in function call.
 }
 \examples{
 \dontrun{
@@ -43,12 +43,14 @@ ts_data <- aq_get_ts(
  parameter = "Water Temp",
  query_from = "2025-12-01 00:00:00",
  query_to = "2026-01-01 00:00:00")
-ts_data <- aq_get_ts(
- location_id = "11447903",
- parameter = "Sp Cond",
- query_from = "2025-12-01 00:00:00",
- query_to = lubridate::now()
- )
+multi_sta_ts <- aq_get_ts(
+  cdec_code = c("SJW", "MDM", "GSS"),
+  parameter = "Turbidity, Form Neph")
+multi_param_ts <- aq_get_ts(
+  cdec_code = "SJW",
+  parameter = c("Turbidity, Form Neph", "Water Temp", "Sp Cond"),
+  query_from = "2025-12-01",
+  query_to = "2026-01-01")
  }
 }
 \seealso{
