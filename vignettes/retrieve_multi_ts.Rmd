@@ -99,10 +99,10 @@ DT::datatable(multi_param_ts,
 You may want to condense the data by creating a dataset with daily averages. 
 
 ```{r}
-multi_param_daily <- multi_param_ts %>%
-  mutate(date = lubridate::date(datetime)) %>%
-  group_by(date, cdec_code, location_id, parameter_name) %>%
-  summarize(daily_avg = round(mean(value),2)) %>%
+multi_param_daily <- multi_param_ts  |> 
+  mutate(date = lubridate::date(datetime)) |> 
+  group_by(date, cdec_code, location_id, parameter_name) |> 
+  summarize(daily_avg = round(mean(value),2)) |> 
   ungroup()
 ```
 

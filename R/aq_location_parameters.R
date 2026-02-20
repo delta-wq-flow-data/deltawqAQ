@@ -54,7 +54,7 @@ aq_get_location_parameters = function(cdec_code=NULL, location_id=NULL, aq_locat
       }
 
     if (length(ts_params$Identifier) > 0) {
-      ts_params %>%
+      ts_params |>
         dplyr::select(aq_location_id = LocationIdentifier,
                       parameter_id = ParameterId,
                       parameter_name = Parameter,
@@ -68,7 +68,7 @@ aq_get_location_parameters = function(cdec_code=NULL, location_id=NULL, aq_locat
   })
 
   # Combine with additional location information
-  df <- json_ts_params_df %>%
+  df <- json_ts_params_df |>
     dplyr::left_join(data_filtered, by = "aq_location_id") |>
     dplyr::select(cdec_code, location_id, aq_location_name, aq_location_id, parameter_name, unit, label, updated_at, ts_unique_id)
   return(df)

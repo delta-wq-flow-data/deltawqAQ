@@ -53,8 +53,8 @@ DT::datatable(deltawqAQ::aq_all_locations,
 View locations on a map. 
 
 ```{r}
-leaflet() %>%
-  addTiles() %>%
+leaflet()  |> 
+  addTiles() |> 
   addMarkers(lng = deltawqAQ::aq_all_locations$longitude, 
              lat = deltawqAQ::aq_all_locations$latitude, 
              label = deltawqAQ::aq_all_locations$cdec_code)
