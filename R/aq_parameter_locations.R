@@ -16,7 +16,7 @@
 aq_get_parameter_locations <- function(param) {
   aq_ensure_connection()
 
-  resp <- aq_request() |> # this will have the auth header already in it
+  resp <- aq_request() |>
     httr2::req_url_path_append("GetTimeSeriesDescriptionList") |>
     httr2::req_url_query(Parameter = param, Publish = "true") |>
     httr2::req_error(is_error = ~ FALSE) |> # prevent the request from error when 400 is returned
@@ -24,7 +24,6 @@ aq_get_parameter_locations <- function(param) {
 
   body <- httr2::resp_body_json(resp, simplifyVector = TRUE)
 
-  # show useful message when there is an error
   if (httr2::resp_is_error(resp) || !is.null(body$ResponseStatus)) {
     msg <- body$ResponseStatus$Message %||% paste("HTTP", httr2::resp_status(resp))
     cli::cli_abort(c(
@@ -34,12 +33,15 @@ aq_get_parameter_locations <- function(param) {
   }
 
   json_ts_des <- body$TimeSeriesDescriptions |>
-    dplyr::select(aq_location_id = LocationIdentifier, parameter_name = Parameter, start_datetime = CorrectedStartTime,
+    dplyr::select(aq_location_id = LocationIdentifier, parameter_name = Parameter, unit = Unit, label = Label, start_datetime = CorrectedStartTime,
                   end_datetime = CorrectedEndTime) |>
     dplyr::right_join(deltawqAQ::aq_all_locations |>
                         dplyr::select(aq_location_id, cdec_code, location_id, location_name), by = "aq_location_id") |>
     dplyr::filter(!is.na(start_datetime),
-                  !is.na(end_datetime))
+                  !is.na(end_datetime),
+                  # remove additional stage parameters
+                  !(grepl("PS2", label)),
+                  !(grepl("AccUpbeam", label)))
 
   # Filter aq_all_parameter_locations data object to the parameter selected and add additional details
   params_filtered <- deltawqAQ::aq_all_parameters |>
@@ -48,6 +50,7 @@ aq_get_parameter_locations <- function(param) {
     dplyr::left_join(json_ts_des) |>
     # final selection of display columns
     dplyr::select(parameter_name,
+                  unit,
                   cdec_code,
                   location_id,
                   location_name,
@@ -55,7 +58,6 @@ aq_get_parameter_locations <- function(param) {
                   start_datetime,
                   end_datetime)
 
-  # Return df
   return(params_filtered)
 
 }
