@@ -8,7 +8,7 @@ Scripts pull the most recently available time series data from the Aquarius data
 To install package, use the `remotes::install_github()` function.
 
 ```
-remotes::install_github("delta-wq-flow-data/deltawqAQ")
+remotes::install_github("delta-wq-flow-data/deltawqAQ", build_vignettes = TRUE)
 ```
 
 ## Usage
@@ -26,6 +26,6 @@ See the Articles tab for examples of how to use this package.
 * `aq_get_parameter_locations()` for viewing the locations associated with a parameter
 * `aq_get_ts()` for obtaining time series for one location and parameter, for several parameters at one location, or for obtaining time series for one parameter at several locations
 
-To view user-friendly package information and vignette with workflow example run pkgdown::preview_site(). 
+To see example of vignette run ```vignette("retrieve_timeseries", package = "deltawqAQ")```
 
 
