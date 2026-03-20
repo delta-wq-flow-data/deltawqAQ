@@ -115,6 +115,11 @@ aq_process_ts = function(location_code, parameter, query_from, query_to) {
     httr2::req_error(is_error = ~ FALSE) |>
     httr2::req_perform()
 
+  if (httr2::resp_is_error(resp)) {
+      cli::cli_alert_warning("HTTP error {httr2::resp_status(resp)} for time series '{timeseries_id}'. Skipping.")
+      return(NULL)
+    }
+
   resp_body <- httr2::resp_body_json(resp, simplifyVector = TRUE)
   points <- resp_body$Points
   ts_info <- resp_body$TimeSeries
