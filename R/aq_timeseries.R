@@ -93,13 +93,21 @@ aq_process_ts = function(location_code, parameter, query_from, query_to) {
   }
 
   # Get the time series ID using the crosswalk
-  timeseries_id <- deltawqAQ::aq_parameter_location_crosswalk |>
+  ts_ids <- deltawqAQ::aq_parameter_location_crosswalk |>
     dplyr::filter(parameter_name %in% parameter,
                   aq_location_id %in% location_code) |>
     dplyr::pull(ts_unique_id)
 
+
+  if (length(ts_ids) > 1) {
+    cli::cli_alert_warning(
+      "Multiple time series found for '{parameter}' at '{location_code}'. Returning all {length(ts_ids)}."
+    )
+  }
+
   ## Get the data
-  resp <- aq_request() |>
+  purrr::map_df(ts_ids, function(timeseries_id) {
+    resp <- aq_request() |>
     httr2::req_url_path_append("GetTimeSeriesData") |>
     httr2::req_url_query(TimeSeriesUniqueIds = timeseries_id,
                          queryFrom = query_from,
@@ -107,11 +115,14 @@ aq_process_ts = function(location_code, parameter, query_from, query_to) {
     httr2::req_error(is_error = ~ FALSE) |>
     httr2::req_perform()
 
-  resp_points <- httr2::resp_body_json(resp, simplifyVector = TRUE)
-  points <- resp_points$Points
+  if (httr2::resp_is_error(resp)) {
+      cli::cli_alert_warning("HTTP error {httr2::resp_status(resp)} for time series '{timeseries_id}'. Skipping.")
+      return(NULL)
+    }
 
-  resp_ts <- httr2::resp_body_json(resp, simplifyVector = TRUE)
-  ts_info <- resp_ts$TimeSeries
+  resp_body <- httr2::resp_body_json(resp, simplifyVector = TRUE)
+  points <- resp_body$Points
+  ts_info <- resp_body$TimeSeries
 
   # Check if we got any data
   if (httr2::resp_is_error(resp) || !is.null(points$ResponseStatus)) {
@@ -121,6 +132,12 @@ aq_process_ts = function(location_code, parameter, query_from, query_to) {
       "i" = "Check {.code deltawqAQ::aq_all_parameters} and {.code deltawqAQ::aq_all_locations}
       for valid parameter and location names"
     ))
+  }
+
+  # If one time series has empty points
+  if (is.null(points) || length(points) == 0 || (is.data.frame(points) && nrow(points) == 0)) {
+    cli::cli_alert_warning("No data returned for time series '{timeseries_id}' in the requested time range.")
+    return(NULL)
   }
 
   # Convert timestamps to work in ggplot
@@ -139,6 +156,8 @@ aq_process_ts = function(location_code, parameter, query_from, query_to) {
   )
 
   return(df)
+})
+
 }
 
 #' @title Get Aquarius time series for multiple locations
