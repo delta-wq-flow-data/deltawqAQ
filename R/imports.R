@@ -1,15 +1,5 @@
 # Global imports for connections and messages
 
-#' @importFrom httr
-#'  GET
-#'  POST
-#'  DELETE
-#'  parse_url
-#'  set_config
-#'  timeout
-#'  stop_for_status
-#'  content
-#'  handle_reset
 #' @importFrom cli
 #'   cli_alert_success
 #'   cli_alert_danger
