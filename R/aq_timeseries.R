@@ -12,6 +12,7 @@
 #' @param parameter Parameter name
 #' @param query_from Start datetime for query; also accepts date. Defaults to 2 weeks before today.
 #' @param query_to End datetime for query; also accepts date. Defaults to today.
+#' @param publish_type Type of time series to return based on label suffix. One of `"working"` (default) or `"USGS"`.
 
 #' @return A data frame containing the time series values and associated metadata.
 #'
@@ -30,6 +31,10 @@
 #'   parameter = c("Turbidity, Form Neph", "Water Temp", "Sp Cond"),
 #'   query_from = "2025-12-01",
 #'   query_to = "2026-01-01")
+#'usgs_data <- aq_get_ts(
+#'   cdec_code = "GSS",
+#'   parameter = "Water Temp",
+#'   publish_type = "USGS")
 #'  }
 #' @family Retrieve time series
 #' @export
@@ -38,7 +43,10 @@ aq_get_ts <- function(cdec_code = NULL, parameter = NULL,
                       query_from = lubridate::today()-14,
                       query_to = lubridate::today(),
                       location_id = NULL,
-                      aq_location_id = NULL) {
+                      aq_location_id = NULL,
+                      publish_type = c("working", "USGS")) {
+
+  publish_type <- match.arg(publish_type)
 
   if (length(parameter)>1 & length(cdec_code)>1) {
     cli::cli_abort("Please query either multiple parameters or multiple locations, not both.")
@@ -49,7 +57,8 @@ aq_get_ts <- function(cdec_code = NULL, parameter = NULL,
                              query_from = query_from,
                              query_to = query_to,
                              location_id = location_id,
-                             aq_location_id = aq_location_id)
+                             aq_location_id = aq_location_id,
+                             publish_type = publish_type)
   }
 
  else if (length(parameter)>1) {
@@ -57,7 +66,8 @@ aq_get_ts <- function(cdec_code = NULL, parameter = NULL,
                               query_from = query_from,
                               query_to = query_to,
                               location_id = location_id,
-                              aq_location_id = aq_location_id)
+                              aq_location_id = aq_location_id,
+                              publish_type = publish_type)
  }
 
   else if (length(parameter) == 1 & length(cdec_code) == 1) {
@@ -65,7 +75,8 @@ aq_get_ts <- function(cdec_code = NULL, parameter = NULL,
                           query_from = query_from,
                           query_to = query_to,
                           location_id = location_id,
-                          aq_location_id = aq_location_id)
+                          aq_location_id = aq_location_id,
+                          publish_type = publish_type)
   }
 
 }
@@ -84,7 +95,7 @@ aq_get_ts <- function(cdec_code = NULL, parameter = NULL,
 #' @family Retrieve time series
 #' @return A data frame with 7 columns that will be further modified in get_ts functions
 #' @keywords internal
-aq_process_ts = function(location_code, parameter, query_from, query_to) {
+aq_process_ts = function(location_code, parameter, query_from, query_to, publish_type = "working") {
 
   filtered_params <- aq_get_location_parameters(aq_location_id = location_code)
 
@@ -95,7 +106,8 @@ aq_process_ts = function(location_code, parameter, query_from, query_to) {
   # Get the time series ID using the crosswalk
   ts_ids <- deltawqAQ::aq_parameter_location_crosswalk |>
     dplyr::filter(parameter_name %in% parameter,
-                  aq_location_id %in% location_code) |>
+                  aq_location_id %in% location_code,
+                  grepl(paste0("\\.", publish_type, "$"), label)) |>
     dplyr::pull(ts_unique_id)
 
 
@@ -182,7 +194,8 @@ aq_get_ts_multi_location <- function(cdec_code = NULL,
                                     query_from = lubridate::today()-14,
                                     query_to = lubridate::today(),
                                     location_id = NULL,
-                                    aq_location_id = NULL) {
+                                    aq_location_id = NULL,
+                                    publish_type = "working") {
 
   # Check connection
   aq_ensure_connection()
@@ -235,7 +248,7 @@ aq_get_ts_multi_location <- function(cdec_code = NULL,
     tryCatch({
 
       # Get time series data
-      df <- aq_process_ts(location, parameter, query_from, query_to)
+      df <- aq_process_ts(location, parameter, query_from, query_to, publish_type)
 
       # Join with location metadata
       ts_data <- df |>
@@ -296,7 +309,8 @@ aq_get_ts_multi_param <- function(cdec_code = NULL,
                                   query_from = lubridate::today()-14,
                                   query_to = lubridate::today(),
                                   location_id = NULL,
-                                  aq_location_id = NULL){
+                                  aq_location_id = NULL,
+                                  publish_type = "working"){
 
    # Check connection
   aq_ensure_connection()
@@ -349,7 +363,7 @@ aq_get_ts_multi_param <- function(cdec_code = NULL,
     tryCatch({
 
       # Get time series data
-      df <- aq_process_ts(location_code, param, query_from, query_to)
+      df <- aq_process_ts(location_code, param, query_from, query_to, publish_type)
 
       # Join with location metadata
       ts_data <- df |>
