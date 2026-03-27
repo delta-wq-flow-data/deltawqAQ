@@ -10,7 +10,8 @@ aq_get_ts(
   query_from = lubridate::today() - 14,
   query_to = lubridate::today(),
   location_id = NULL,
-  aq_location_id = NULL
+  aq_location_id = NULL,
+  publish_type = c("working", "USGS")
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ aq_get_ts(
 \item{location_id}{Numeric identifier for location; one mutually exclusive option for querying}
 
 \item{aq_location_id}{Location identifier as displayed in Aquarius database; one mutually exclusive option for querying}
+
+\item{publish_type}{Type of time series to return based on label suffix. One of `"working"` (default) or `"USGS"`.}
 }
 \value{
 A data frame containing the time series values and associated metadata.
@@ -51,6 +54,10 @@ multi_param_ts <- aq_get_ts(
   parameter = c("Turbidity, Form Neph", "Water Temp", "Sp Cond"),
   query_from = "2025-12-01",
   query_to = "2026-01-01")
+usgs_data <- aq_get_ts(
+  cdec_code = "GSS",
+  parameter = "Water Temp",
+  publish_type = "USGS")
  }
 }
 \seealso{

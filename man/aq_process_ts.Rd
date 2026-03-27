@@ -4,7 +4,13 @@
 \alias{aq_process_ts}
 \title{Process Aquarius time series}
 \usage{
-aq_process_ts(location_code, parameter, query_from, query_to)
+aq_process_ts(
+  location_code,
+  parameter,
+  query_from,
+  query_to,
+  publish_type = "working"
+)
 }
 \arguments{
 \item{location_code}{Aquarius location/location code of interest}
