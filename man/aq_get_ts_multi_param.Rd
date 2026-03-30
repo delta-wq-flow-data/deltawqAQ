@@ -10,7 +10,8 @@ aq_get_ts_multi_param(
   query_from = lubridate::today() - 14,
   query_to = lubridate::today(),
   location_id = NULL,
-  aq_location_id = NULL
+  aq_location_id = NULL,
+  publish_type = "working"
 )
 }
 \arguments{

@@ -107,8 +107,13 @@ aq_process_ts = function(location_code, parameter, query_from, query_to, publish
   ts_ids <- deltawqAQ::aq_parameter_location_crosswalk |>
     dplyr::filter(parameter_name %in% parameter,
                   aq_location_id %in% location_code,
-                  grepl(paste0("\\.", publish_type, "$"), label)) |>
-    dplyr::pull(ts_unique_id)
+                  grepl(paste0("\\.", publish_type, "$"), label))
+
+  if ("Stage" %in% parameter) {
+    ts_ids <- ts_ids |> dplyr::filter(startsWith(label, "PS1_"))
+  }
+
+  ts_ids <- ts_ids |> dplyr::pull(ts_unique_id)
 
 
   if (length(ts_ids) > 1) {
