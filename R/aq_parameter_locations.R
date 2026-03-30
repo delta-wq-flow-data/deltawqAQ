@@ -39,9 +39,8 @@ aq_get_parameter_locations <- function(param) {
                         dplyr::select(aq_location_id, cdec_code, location_id, location_name), by = "aq_location_id") |>
     dplyr::filter(!is.na(start_datetime),
                   !is.na(end_datetime),
-                  # remove additional stage parameters
-                  !(grepl("PS2", label)),
-                  !(grepl("AccUpbeam", label)))
+                  # keep only PS1 stage parameters
+                  (grepl("PS1", label)))
 
   # Filter aq_all_parameter_locations data object to the parameter selected and add additional details
   params_filtered <- deltawqAQ::aq_all_parameters |>
