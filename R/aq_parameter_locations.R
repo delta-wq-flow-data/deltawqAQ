@@ -40,7 +40,7 @@ aq_get_parameter_locations <- function(param) {
     dplyr::filter(!is.na(start_datetime),
                   !is.na(end_datetime),
                   # keep only PS1 stage parameters
-                  (grepl("PS1", label)))
+                  if(param == "Stage") grepl("PS1", label) else TRUE)
 
   # Filter aq_all_parameter_locations data object to the parameter selected and add additional details
   params_filtered <- deltawqAQ::aq_all_parameters |>
