@@ -23,6 +23,7 @@ all_locations <- aq_get_location_list()
 Other Retrieve metadata: 
 \code{\link{aq_get_location_metadata}()},
 \code{\link{aq_get_location_parameters}()},
-\code{\link{aq_get_parameter_locations}()}
+\code{\link{aq_get_parameter_locations}()},
+\code{\link{aq_get_parameter_locations_ts}()}
 }
 \concept{Retrieve metadata}
