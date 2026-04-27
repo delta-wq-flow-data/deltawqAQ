@@ -60,3 +60,66 @@ aq_get_parameter_locations <- function(param) {
   return(params_filtered)
 
 }
+
+
+#' @title Get locations associated with a parameter - for each timeseries
+#'
+#' @description Provides a list of locations associated with a queried parameter at the timeseries level.
+#'
+#' @details Provides a list of locations and dates associated with a queried parameter at the timeseries level.
+#' Exactly one parameter name should be provided.
+#'
+#' @param param Parameter of interest
+
+#' @return A data frame containing columns for location information, timeseries identifier, and start and end times of timeseries
+#'
+#' @family Retrieve metadata
+#' @export
+aq_get_parameter_locations_ts <- function(param) {
+  aq_ensure_connection()
+
+  resp <- aq_request() |>
+    httr2::req_url_path_append("GetTimeSeriesDescriptionList") |>
+    httr2::req_url_query(Parameter = param, Publish = "true") |>
+    httr2::req_error(is_error = ~ FALSE) |> # prevent the request from error when 400 is returned
+    httr2::req_perform()
+
+  body <- httr2::resp_body_json(resp, simplifyVector = TRUE)
+
+  if (httr2::resp_is_error(resp) || !is.null(body$ResponseStatus)) {
+    msg <- body$ResponseStatus$Message %||% paste("HTTP", httr2::resp_status(resp))
+    cli::cli_abort(c(
+      msg,
+      "i" = "Check {.code deltawqAQ::aq_all_parameters} for valid parameter names"
+    ))
+  }
+
+  json_ts_des <- body$TimeSeriesDescriptions |>
+    dplyr::select(aq_location_id = LocationIdentifier, time_series_id = Identifier, parameter_name = Parameter, unit = Unit, label = Label, start_datetime = CorrectedStartTime,
+                  end_datetime = CorrectedEndTime) |>
+    dplyr::right_join(deltawqAQ::aq_all_locations |>
+                        dplyr::select(aq_location_id, cdec_code, location_id, location_name), by = "aq_location_id") |>
+    dplyr::filter(!is.na(start_datetime),
+                  !is.na(end_datetime),
+                  # keep only PS1 stage parameters
+                  if(param == "Stage") grepl("PS1", label) else TRUE)
+
+  # Filter aq_all_parameter_locations data object to the parameter selected and add additional details
+  params_filtered <- deltawqAQ::aq_all_parameters |>
+    dplyr::filter(parameter_name == param) |>
+    # add start and end date times
+    dplyr::left_join(json_ts_des) |>
+    # final selection of display columns
+    dplyr::select(parameter_name,
+                  time_series_id,
+                  unit,
+                  cdec_code,
+                  location_id,
+                  location_name,
+                  aq_location_id,
+                  start_datetime,
+                  end_datetime)
+
+  return(params_filtered)
+
+}
