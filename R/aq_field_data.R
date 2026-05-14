@@ -78,14 +78,15 @@ aq_get_field_readings = function(cdec_code = NULL, location_id = NULL, aq_locati
       }
 
       field_readings <- jsonlite::flatten(body$FieldVisitReadings)|>
-        dplyr::select(datetime = lubridate::ymd_hms(Time),
+        dplyr::select(datetime = Time,
                       parameter_id = ParameterId,
                       parameter_name = Parameter,
                       value = Value.Numeric,
                       unit = Value.Unit,
                       monitoring_method = MonitoringMethod,
                       field_visit_id = FieldVisitIdentifier) |>
-        dplyr::mutate(aq_location_id = id)
+        dplyr::mutate(aq_location_id = id,
+                      datetime = lubridate::ymd_hms(datetime))
 
       successful_locations <<- c(successful_locations, id)
       return(field_readings)
