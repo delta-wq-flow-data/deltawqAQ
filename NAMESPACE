@@ -2,6 +2,7 @@
 
 export(aq_connect)
 export(aq_disconnect)
+export(aq_get_field_readings)
 export(aq_get_location_list)
 export(aq_get_location_metadata)
 export(aq_get_location_parameters)
