@@ -86,7 +86,7 @@ aq_get_field_readings = function(cdec_code = NULL, location_id = NULL, aq_locati
                       monitoring_method = MonitoringMethod,
                       field_visit_id = FieldVisitIdentifier) |>
         dplyr::mutate(aq_location_id = id,
-                      datetime = lubridate::ymd_hms(datetime))
+                      datetime = lubridate::ymd_hms(datetime, tz = "Etc/GMT+8"))
 
       successful_locations <<- c(successful_locations, id)
       return(field_readings)

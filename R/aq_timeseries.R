@@ -158,7 +158,7 @@ aq_process_ts = function(location_code, parameter, query_from, query_to, publish
   }
 
   # Convert timestamps to work in ggplot
-  points$Datetime <- lubridate::ymd_hms(points$Timestamp)
+  points$Datetime <- lubridate::ymd_hms(points$Timestamp, tz = "Etc/GMT+8")
 
   # Create clean data frame
   df <- data.frame(
