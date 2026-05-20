@@ -84,7 +84,8 @@ aq_get_field_readings = function(cdec_code = NULL, location_id = NULL, aq_locati
                       value = Value.Numeric,
                       unit = Value.Unit,
                       monitoring_method = MonitoringMethod,
-                      field_visit_id = FieldVisitIdentifier) |>
+                      field_visit_id = FieldVisitIdentifier,
+                      reading_type = ReadingType) |>
         dplyr::mutate(aq_location_id = id,
                       datetime = lubridate::ymd_hms(datetime, tz = "Etc/GMT+8"))
 
@@ -109,7 +110,7 @@ aq_get_field_readings = function(cdec_code = NULL, location_id = NULL, aq_locati
   # Combine with additional location information for df product
   df <- json_ts_readings |>
     dplyr::left_join(data_filtered, by = "aq_location_id") |>
-    dplyr::select(cdec_code, aq_location_name, aq_location_id, datetime, parameter_name, value, unit, monitoring_method, field_visit_id)
+    dplyr::select(cdec_code, aq_location_name, aq_location_id, datetime, parameter_name, value, unit, monitoring_method, reading_type, field_visit_id)
   return(df)
 
 }
