@@ -11,7 +11,7 @@ aq_get_ts(
   query_to = lubridate::today(),
   location_id = NULL,
   aq_location_id = NULL,
-  publish_type = c("working", "USGS")
+  publish_type = c("working", "USGS", "int")
 )
 }
 \arguments{
@@ -27,7 +27,7 @@ aq_get_ts(
 
 \item{aq_location_id}{Location identifier as displayed in Aquarius database; one mutually exclusive option for querying}
 
-\item{publish_type}{Type of time series to return based on label suffix. One of `"working"` (default) or `"USGS"`.}
+\item{publish_type}{Type of time series to return based on label suffix. One of `"working"` (default), `"USGS"`, or `"int"`.}
 }
 \value{
 A data frame containing the time series values and associated metadata.

@@ -12,7 +12,7 @@
 #' @param parameter Parameter name
 #' @param query_from Start datetime for query; also accepts date. Defaults to 2 weeks before today.
 #' @param query_to End datetime for query; also accepts date. Defaults to today.
-#' @param publish_type Type of time series to return based on label suffix. One of `"working"` (default) or `"USGS"`.
+#' @param publish_type Type of time series to return based on label suffix. One of `"working"` (default), `"USGS"`, or `"int"`.
 
 #' @return A data frame containing the time series values and associated metadata.
 #'
@@ -44,7 +44,7 @@ aq_get_ts <- function(cdec_code = NULL, parameter = NULL,
                       query_to = lubridate::today(),
                       location_id = NULL,
                       aq_location_id = NULL,
-                      publish_type = c("working", "USGS")) {
+                      publish_type = c("working", "USGS", "int")) {
 
   publish_type <- match.arg(publish_type)
 
