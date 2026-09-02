@@ -44,7 +44,11 @@ aq_get_ts <- function(cdec_code = NULL, parameter = NULL,
                       query_to = lubridate::today(),
                       location_id = NULL,
                       aq_location_id = NULL,
-                      publish_type = c("working", "USGS", "int")) {
+                      publish_type = c("working", "USGS", "int", "Published")) {
+
+  if (missing(publish_type) && any(grepl("Discharge", parameter))) {
+    publish_type <- "Published"
+  }
 
   publish_type <- match.arg(publish_type)
 
@@ -124,7 +128,7 @@ aq_process_ts = function(location_code, parameter, query_from, query_to, publish
 
   ## Get the data
   purrr::map_df(ts_ids, function(timeseries_id) {
-    resp <- aq_request() |>
+    resp <- deltawqAQ:::aq_request() |>
     httr2::req_url_path_append("GetTimeSeriesData") |>
     httr2::req_url_query(TimeSeriesUniqueIds = timeseries_id,
                          queryFrom = query_from,

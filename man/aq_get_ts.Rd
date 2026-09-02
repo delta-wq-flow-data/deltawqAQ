@@ -11,7 +11,7 @@ aq_get_ts(
   query_to = lubridate::today(),
   location_id = NULL,
   aq_location_id = NULL,
-  publish_type = c("working", "USGS", "int")
+  publish_type = c("working", "USGS", "int", "Published")
 )
 }
 \arguments{
