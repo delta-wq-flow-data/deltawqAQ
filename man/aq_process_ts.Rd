@@ -20,6 +20,8 @@ aq_process_ts(
 \item{query_from}{Start datetime for query; also accepts date}
 
 \item{query_to}{End datetime for query; also accepts date}
+
+\item{publish_type}{Type of time series to return based on label suffix. One of `"working"` (default), `"USGS"`, `"Published"` (Discharge data), or `"int"`}
 }
 \value{
 A data frame with 7 columns that will be further modified in get_ts functions

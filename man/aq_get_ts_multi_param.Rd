@@ -26,6 +26,8 @@ aq_get_ts_multi_param(
 \item{location_id}{Numeric identifier for location; one option for querying}
 
 \item{aq_location_id}{Location identifier as displayed in Aquarius database; one option for querying}
+
+\item{publish_type}{Type of time series to return based on label suffix. One of `"working"` (default), `"USGS"`, `"Published"` (Discharge data), or `"int"`}
 }
 \value{
 A data frame of the combined time series for all parameters

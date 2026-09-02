@@ -27,7 +27,7 @@ aq_get_ts(
 
 \item{aq_location_id}{Location identifier as displayed in Aquarius database; one mutually exclusive option for querying}
 
-\item{publish_type}{Type of time series to return based on label suffix. One of `"working"` (default), `"USGS"`, or `"int"`.}
+\item{publish_type}{Type of time series to return based on label suffix. One of `"working"` (default), `"USGS"`, `"Published"` (Discharge data), or `"int"`}
 }
 \value{
 A data frame containing the time series values and associated metadata.

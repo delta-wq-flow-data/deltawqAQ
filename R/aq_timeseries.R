@@ -12,7 +12,7 @@
 #' @param parameter Parameter name
 #' @param query_from Start datetime for query; also accepts date. Defaults to 2 weeks before today.
 #' @param query_to End datetime for query; also accepts date. Defaults to today.
-#' @param publish_type Type of time series to return based on label suffix. One of `"working"` (default), `"USGS"`, or `"int"`.
+#' @param publish_type Type of time series to return based on label suffix. One of `"working"` (default), `"USGS"`, `"Published"` (Discharge data), or `"int"`
 
 #' @return A data frame containing the time series values and associated metadata.
 #'
@@ -96,6 +96,7 @@ aq_get_ts <- function(cdec_code = NULL, parameter = NULL,
 #' @param parameter Parameter name from Aquarius
 #' @param query_from Start datetime for query; also accepts date
 #' @param query_to End datetime for query; also accepts date
+#' @param publish_type Type of time series to return based on label suffix. One of `"working"` (default), `"USGS"`, `"Published"` (Discharge data), or `"int"`
 #' @family Retrieve time series
 #' @return A data frame with 7 columns that will be further modified in get_ts functions
 #' @keywords internal
@@ -194,6 +195,7 @@ aq_process_ts = function(location_code, parameter, query_from, query_to, publish
 #' @param parameter Parameter name
 #' @param query_from Start datetime for query; also accepts date. Defaults to 2 weeks before today.
 #' @param query_to End datetime for query; also accepts date. Defaults to today.
+#' @param publish_type Type of time series to return based on label suffix. One of `"working"` (default), `"USGS"`, `"Published"` (Discharge data), or `"int"`
 #'
 #' @return A data frame of the combined time series for all locations
 #' @family Retrieve time series
@@ -310,6 +312,7 @@ aq_get_ts_multi_location <- function(cdec_code = NULL,
 #' @param parameter List of parameter names
 #' @param query_from Start datetime for query; also accepts date. Defaults to 2 weeks before today.
 #' @param query_to End datetime for query; also accepts date. Defaults to today.
+#' @param publish_type Type of time series to return based on label suffix. One of `"working"` (default), `"USGS"`, `"Published"` (Discharge data), or `"int"`
 #'
 #' @return A data frame of the combined time series for all parameters
 #' @family Retrieve time series

@@ -26,6 +26,8 @@ aq_get_ts_multi_location(
 \item{location_id}{List of numeric identifiers for location; one mutually exclusive option for querying}
 
 \item{aq_location_id}{List of location identifiers as displayed in Aquarius database; one mutually exclusive option for querying}
+
+\item{publish_type}{Type of time series to return based on label suffix. One of `"working"` (default), `"USGS"`, `"Published"` (Discharge data), or `"int"`}
 }
 \value{
 A data frame of the combined time series for all locations
